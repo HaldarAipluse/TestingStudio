@@ -1,252 +1,26 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-  <title>YT Copy Generator — Gemini</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .fade-in { animation: fadeIn 0.6s ease-in-out; }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .pulse { animation: pulse 2s infinite; }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
-      50% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
-    }
-    .hidden-screen { display: none; }
+📋 REGISTRATION FORM
 
-    /* Animated Gradient Background */
-    .animated-bg {
-      background: linear-gradient(-45deg, #6b21a8, #9333ea, #3b0764, #7e22ce);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-      position: fixed;
-      inset: 0;
-      z-index: -2;
-    }
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
+🔸 DATE : 20/08/2025
 
-    /* Floating blobs */
-    .blob {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.6;
-      animation: float 20s infinite;
-    }
-    .blob1 { width: 300px; height: 300px; background: #a855f7; top: 10%; left: 5%; animation-duration: 25s; }
-    .blob2 { width: 400px; height: 400px; background: #9333ea; top: 50%; left: 60%; animation-duration: 30s; }
-    .blob3 { width: 250px; height: 250px; background: #c084fc; top: 70%; left: 20%; animation-duration: 22s; }
+1. NAME : SUBHOJIT HALDAR
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0) translateX(0); }
-      50% { transform: translateY(-40px) translateX(30px); }
-    }
-  </style>
-</head>
-<body class="text-gray-900 min-h-screen flex flex-col relative overflow-hidden">
-  
-  <!-- Background Layer -->
-  <div class="animated-bg"></div>
-  <div class="blob blob1"></div>
-  <div class="blob blob2"></div>
-  <div class="blob blob3"></div>
 
-  <!-- Header -->
-  <header class="bg-purple-700 bg-opacity-80 backdrop-blur text-white py-4 px-6 flex items-center justify-center shadow-md">
-    <h1 class="text-lg font-semibold">YT Copy Generator</h1>
-  </header>
+2. DATE OF BIRTH : 12/05/2007
 
-  <!-- Main Content -->
-  <main class="flex-1 max-w-md w-full mx-auto p-4 space-y-6 relative z-10">
 
-    <!-- API Key Modal -->
-    <div id="apiModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-      <div class="bg-white rounded-2xl shadow-xl p-6 w-80 fade-in">
-        <h2 class="text-base font-semibold text-purple-700 mb-3 text-center">Enter Gemini API Key</h2>
-        <input id="modalApiKey" type="password" placeholder="AIza…" class="w-full border rounded-lg p-3 mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-        <button id="saveApiKey" class="bg-purple-600 hover:bg-purple-700 transition text-white px-4 py-2 rounded-lg w-full font-medium pulse">Save Key</button>
-      </div>
-    </div>
+3. FATHER’S NAME : Nandadulal Halder
 
-    <!-- Home Screen -->
-    <section id="homeScreen" class="fade-in">
-      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 text-center space-y-4">
-        <h2 class="text-xl font-semibold text-purple-700">Welcome 🎉</h2>
-        <p class="text-gray-700 text-sm">Generate professional YouTube titles, descriptions, tags, and more with Gemini AI. Use the bottom nav to get started.</p>
-      </div>
-    </section>
 
-    <!-- Generate Screen -->
-    <section id="generateScreen" class="hidden-screen fade-in">
-      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-5 space-y-4">
-        <h2 class="text-base font-semibold text-purple-700">Configuration</h2>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-xs font-medium mb-1 text-gray-600" for="apiKey">Gemini API Key</label>
-            <input id="apiKey" type="password" placeholder="AIza…" class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none" />
-          </div>
-          <div>
-            <label class="block text-xs font-medium mb-1 text-gray-600" for="brief">Topic / Brief</label>
-            <textarea id="brief" class="w-full border rounded-xl p-3 min-h-[100px] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Enter your video idea..."></textarea>
-          </div>
-          <button id="generate" class="bg-purple-600 hover:bg-purple-700 transition text-white px-5 py-3 rounded-xl w-full font-semibold shadow-md">⚡ Generate</button>
-        </div>
-      </div>
-      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-5 space-y-4 mt-4">
-        <h2 class="text-base font-semibold text-purple-700">Generated Copy</h2>
-        <pre id="output" class="whitespace-pre-wrap text-sm bg-purple-50 p-3 rounded-lg border border-purple-200 overflow-x-auto min-h-[160px]">Your results will appear here...</pre>
-      </div>
-    </section>
+4. VILLAGE : Ghoshla
 
-    <!-- History Screen -->
-    <section id="historyScreen" class="hidden-screen fade-in">
-      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 space-y-4">
-        <h2 class="text-base font-semibold text-purple-700">History</h2>
-        <ul id="historyList" class="space-y-2 text-sm text-gray-700">
-          <li>No history yet...</li>
-        </ul>
-      </div>
-    </section>
 
-    <!-- Settings Screen -->
-    <section id="settingsScreen" class="hidden-screen fade-in">
-      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 space-y-4">
-        <h2 class="text-base font-semibold text-purple-700">Settings</h2>
-        <button id="changeApiKey" class="bg-purple-600 hover:bg-purple-700 transition text-white px-5 py-3 rounded-xl w-full font-semibold shadow-md">🔑 Change API Key</button>
-        <button id="clearHistory" class="bg-gray-200 hover:bg-gray-300 transition text-gray-700 px-5 py-3 rounded-xl w-full font-medium">🗑️ Clear History</button>
-      </div>
-    </section>
-  </main>
+5. PIN CODE : 712303
 
-  <!-- Footer / Bottom Nav -->
-  <footer class="bg-white bg-opacity-80 backdrop-blur py-3 border-t shadow-inner relative z-10">
-    <div class="max-w-md mx-auto flex justify-around text-purple-700 text-sm">
-      <button data-screen="homeScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
-        <span>🏠</span>
-        <span>Home</span>
-      </button>
-      <button data-screen="generateScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
-        <span>⚡</span>
-        <span>Generate</span>
-      </button>
-      <button data-screen="historyScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
-        <span>📜</span>
-        <span>History</span>
-      </button>
-      <button data-screen="settingsScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
-        <span>⚙️</span>
-        <span>Settings</span>
-      </button>
-    </div>
-  </footer>
 
-  <script>
-    const apiKeyEl = document.getElementById('apiKey');
-    const briefEl = document.getElementById('brief');
-    const outputEl = document.getElementById('output');
-    const generateBtn = document.getElementById('generate');
-    const apiModal = document.getElementById('apiModal');
-    const modalApiKey = document.getElementById('modalApiKey');
-    const saveApiKeyBtn = document.getElementById('saveApiKey');
-    const historyList = document.getElementById('historyList');
-    const clearHistoryBtn = document.getElementById('clearHistory');
-    const changeApiKeyBtn = document.getElementById('changeApiKey');
+6. POLICE STATION : Gurap
 
-    // Screens
-    const screens = document.querySelectorAll('main section');
-    const navBtns = document.querySelectorAll('.navBtn');
 
-    navBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const target = btn.getAttribute('data-screen');
-        screens.forEach(sec => sec.classList.add('hidden-screen'));
-        document.getElementById(target).classList.remove('hidden-screen');
-      });
-    });
+7. PHONE NUMBER : 8637856826
 
-    // Show modal on first load if no key is stored
-    window.addEventListener('load', () => {
-      const storedKey = localStorage.getItem('geminiApiKey');
-      if (!storedKey) {
-        apiModal.classList.remove('hidden');
-      } else {
-        apiKeyEl.value = storedKey;
-      }
-      loadHistory();
-    });
 
-    // Save key from modal
-    saveApiKeyBtn.addEventListener('click', () => {
-      const key = modalApiKey.value.trim();
-      if (key) {
-        localStorage.setItem('geminiApiKey', key);
-        apiKeyEl.value = key;
-        apiModal.classList.add('hidden');
-      }
-    });
-
-    changeApiKeyBtn.addEventListener('click', () => {
-      apiModal.classList.remove('hidden');
-    });
-
-    async function callGemini(prompt) {
-      const apiKey = apiKeyEl.value.trim();
-      if (!apiKey) {
-        alert('Enter Gemini API key');
-        return;
-      }
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-      const body = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
-      });
-      const data = await res.json();
-      return data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data, null, 2);
-    }
-
-    function saveHistory(entry) {
-      let history = JSON.parse(localStorage.getItem('ytHistory') || '[]');
-      history.unshift(entry);
-      localStorage.setItem('ytHistory', JSON.stringify(history));
-      loadHistory();
-    }
-
-    function loadHistory() {
-      let history = JSON.parse(localStorage.getItem('ytHistory') || '[]');
-      historyList.innerHTML = history.length ? '' : '<li>No history yet...</li>';
-      history.forEach(item => {
-        const li = document.createElement('li');
-        li.className = "bg-purple-50 p-2 rounded border text-gray-700";
-        li.textContent = item;
-        historyList.appendChild(li);
-      });
-    }
-
-    clearHistoryBtn.addEventListener('click', () => {
-      localStorage.removeItem('ytHistory');
-      loadHistory();
-    });
-
-    generateBtn.addEventListener('click', async () => {
-      outputEl.textContent = "Generating...";
-      const text = briefEl.value.trim();
-      if (!text) { outputEl.textContent = "Enter a topic first."; return; }
-      const result = await callGemini("Generate a professional YouTube title, description, tags, hashtags, and SEO copy for: " + text);
-      outputEl.textContent = result;
-      saveHistory(result);
-    });
-  </script>
-</body>
-</html>
+8. OCCUPATION : Student
