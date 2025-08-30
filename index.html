@@ -53,10 +53,11 @@
             display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer;
             padding: 0.25rem 0.5rem; color: var(--c-text-secondary); transition: all 0.2s ease; width: 75px;
         }
-        .nav-button:hover { transform: translateY(-3px); color: var(--c-primary); }
+        .nav-button:not(.disabled):hover { transform: translateY(-3px); color: var(--c-primary); }
         .nav-button i { font-size: 1.4rem; margin-bottom: 0.25rem; }
         .nav-button span { font-size: 0.7rem; font-weight: 600; }
         .nav-button.active { color: var(--c-primary); }
+        .nav-button.disabled { opacity: 0.5; cursor: not-allowed; }
         /* --- Main Content & Views --- */
         .app-main-content { flex-grow: 1; overflow-y: auto; padding: 1.5rem; }
         .app-view { display: none; }
@@ -84,15 +85,6 @@
         .btn.is-loading span { display: none; }
         .btn.is-loading .spinner { display: inline-block; animation: spin 1s linear infinite; }
         .spinner { display: none; } @keyframes spin { to { transform: rotate(360deg); } }
-        .skeleton-loader {
-            position: relative; overflow: hidden; background-color: var(--c-bg-primary); width: 100%;
-            padding-bottom: 100%; border-radius: 0.75rem;
-        }
-        .skeleton-loader::after {
-            content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-            animation: shimmer 1.5s infinite;
-        }
         #toast {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             padding: 0.75rem 1.5rem; border-radius: 0.5rem; color: white; font-weight: 600;
@@ -112,22 +104,19 @@
         <!-- Main Content -->
         <main class="app-main-content">
             <!-- Image Generator View -->
-            <section id="view-generator" class="app-view space-y-6">
+            <section id="view-generator" class="app-view active space-y-6">
                 <div class="card"><form id="imageForm" class="space-y-6">
                     <textarea id="prompt" rows="4" class="resize-none" required placeholder="A synthwave sunset over a futuristic city..."></textarea>
                     <button type="submit" id="generateButton" class="btn btn-primary"><i class="fas fa-magic mr-2"></i><span>Create Image</span><i class="fas fa-spinner spinner"></i></button>
                 </form></div>
                 <div id="resultContainer" class="hidden"><div class="card p-4">
-                    <div id="skeletonLoader" class="skeleton-loader"></div>
+                    <div id="skeletonLoader" style="position: relative; overflow: hidden; background-color: var(--c-bg-primary); width: 100%; padding-bottom: 100%; border-radius: 0.75rem;"></div>
                     <div id="imageOutput" class="hidden text-center space-y-4">
                         <img id="generatedImage" src="" alt="AI Image" class="rounded-lg w-full shadow-inner">
                         <a id="downloadButton" href="" download="haldarai-image.png" class="btn btn-primary w-full"><i class="fas fa-download mr-2"></i> Download</a>
                     </div>
                 </div></div>
             </section>
-            
-            <!-- Prompt Studio View -->
-            <section id="view-promptstudio" class="app-view"><div class="card text-center"><h2 class="text-xl font-bold mb-2">Prompt Studio</h2><p class="text-text-secondary">Feature coming soon.</p></div></section>
             
             <!-- Dashboard View -->
             <section id="view-dashboard" class="app-view space-y-4">
@@ -153,7 +142,7 @@
         <!-- Bottom Navigation -->
         <nav class="bottom-nav">
             <button class="nav-button active" data-view-target="generator"><i class="fas fa-magic"></i><span>Generator</span></button>
-            <button class="nav-button" data-view-target="promptstudio"><i class="fas fa-brain"></i><span>Studio</span></button>
+            <button class="nav-button disabled" data-view-target="promptstudio" title="Coming Soon"><i class="fas fa-brain"></i><span>Studio</span></button>
             <button class="nav-button" data-view-target="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
             <button class="nav-button" data-view-target="creations"><i class="fas fa-folder-open"></i><span>Library</span></button>
             <button class="nav-button" data-view-target="settings"><i class="fas fa-cog"></i><span>Settings</span></button>
@@ -178,7 +167,7 @@
         themeToggle.addEventListener('click', () => applyTheme(htmlElement.classList.contains('dark') ? 'light' : 'dark'));
 
         // --- View Switching ---
-        const navButtons = document.querySelectorAll('.nav-button');
+        const navButtons = document.querySelectorAll('.nav-button:not(.disabled)');
         const views = document.querySelectorAll('.app-view');
         navButtons.forEach(button => {
             button.addEventListener('click', () => {
@@ -264,7 +253,7 @@
         }
         
         // Initial load
-        updateDashboard();
+        document.querySelector('.nav-button[data-view-target="generator"]').click();
     });
     </script>
 </body>
