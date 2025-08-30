@@ -1,412 +1,252 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>HaldarAi+</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.png">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <style>
-        :root {
-            --c-primary: #3b82f6;
-            --c-bg: #192033;
-            --c-text-primary: #d1d9e6;
-            --c-text-secondary: #8c96b0;
-            --c-shadow-dark: #121725;
-            --c-shadow-light: #202941;
-        }
-        html.light {
-            --c-bg: #e0e5ec;
-            --c-text-primary: #374151;
-            --c-text-secondary: #5a6475;
-            --c-shadow-dark: #a3b1c6;
-            --c-shadow-light: #ffffff;
-        }
-        body {
-            display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; background-color: var(--c-bg);
-            font-family: 'Inter', system-ui, sans-serif;
-            transition: background-color 0.3s ease;
-        }
-        .mobile-app-container {
-            width: 100%; max-width: 450px; height: 100vh; max-height: 900px;
-            display: flex; flex-direction: column;
-            background-color: var(--c-bg); color: var(--c-text-primary);
-            overflow: hidden; position: relative;
-        }
-        .app-header {
-            flex-shrink: 0; padding: 1rem 1.5rem;
-            display: flex; justify-content: center; align-items: center; position: relative;
-        }
-        .app-header h1 { font-size: 1.7rem; font-weight: 800; color: var(--c-primary); }
-        #themeToggle {
-            position: absolute; right: 1.5rem; top: 50%; transform: translateY(-50%);
-            color: var(--c-text-secondary); font-size: 1.2rem;
-        }
-        .app-main-content { flex-grow: 1; overflow-y: auto; padding: 1rem 1.5rem 3rem 1.5rem; }
-        .app-view { display: none; }
-        .app-view.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .neo-outset { border-radius: 1rem; background: var(--c-bg); box-shadow: 8px 8px 16px var(--c-shadow-dark), -8px -8px 16px var(--c-shadow-light);}
-        .neo-inset { border-radius: 1rem; background: var(--c-bg); box-shadow: inset 8px 8px 16px var(--c-shadow-dark), inset -8px -8px 16px var(--c-shadow-light);}
-        .card { padding: 1.5rem; background: var(--c-bg); }
-        input, textarea, select {
-            width: 100%; padding: 1rem; border: none; font-size: 1rem;
-            color: var(--c-text-primary); border-radius: 0.75rem;
-        }
-        input::placeholder, textarea::placeholder { color: var(--c-text-secondary); }
-        input:focus, textarea:focus, select:focus { outline: none; }
-        .btn { border: none; font-weight: 700; font-size: 1rem; transition: all 0.2s; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; color: var(--c-text-secondary); }
-        .btn-primary { color: var(--c-primary); }
-        .bottom-nav {
-            flex-shrink: 0; display: flex; justify-content: space-around; padding: 1rem 0;
-        }
-        .nav-button {
-            display: flex; flex-direction: column; align-items: center; background: none; border: none; cursor: pointer; padding: 0.25rem 0.5rem; color: var(--c-text-secondary); width: 70px; border-radius: 0.75rem;
-        }
-        .nav-button.active { color: var(--c-primary); box-shadow: inset 4px 4px 8px var(--c-shadow-dark), inset -4px -4px 8px var(--c-shadow-light); }
-        .nav-button i { font-size: 1.4rem; margin-bottom: 0.25rem; }
-        .nav-button span { font-size: 0.7rem; font-weight: 600; }
-        /* Toast */
-        #toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
-          z-index:50; padding: 0.8em 1.5em; border-radius:0.7em; font-weight:600; box-shadow:0 4px 12px rgba(59,130,246,0.12); opacity:0; transition:opacity 0.3s;}
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>YT Copy Generator — Gemini</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .fade-in { animation: fadeIn 0.6s ease-in-out; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); }
+      50% { box-shadow: 0 0 0 12px rgba(139, 92, 246, 0); }
+    }
+    .hidden-screen { display: none; }
+
+    /* Animated Gradient Background */
+    .animated-bg {
+      background: linear-gradient(-45deg, #6b21a8, #9333ea, #3b0764, #7e22ce);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+    }
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    /* Floating blobs */
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.6;
+      animation: float 20s infinite;
+    }
+    .blob1 { width: 300px; height: 300px; background: #a855f7; top: 10%; left: 5%; animation-duration: 25s; }
+    .blob2 { width: 400px; height: 400px; background: #9333ea; top: 50%; left: 60%; animation-duration: 30s; }
+    .blob3 { width: 250px; height: 250px; background: #c084fc; top: 70%; left: 20%; animation-duration: 22s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-40px) translateX(30px); }
+    }
+  </style>
 </head>
-<body>
-    <div class="mobile-app-container">
-        <!-- App Header -->
-        <header class="app-header">
-            <h1>HaldarAi+</h1>
-            <button id="themeToggle" aria-label="Toggle theme"><i class="fas fa-sun"></i><i class="fas fa-moon hidden"></i></button>
-        </header>
+<body class="text-gray-900 min-h-screen flex flex-col relative overflow-hidden">
+  
+  <!-- Background Layer -->
+  <div class="animated-bg"></div>
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
 
-        <!-- Main Content Area -->
-        <main class="app-main-content">
-            <!-- Image Generator -->
-            <section id="view-generator" class="app-view active">
-                <div class="card neo-outset space-y-6">
-                    <h2 class="text-2xl font-bold text-center text-text-secondary">Image Generator</h2>
-                    <form id="imageForm" class="space-y-6">
-                        <div>
-                            <label for="prompt" class="text-sm font-medium text-text-secondary mb-2 block">Your Prompt:</label>
-                            <textarea id="prompt" rows="4" class="neo-inset" required placeholder="A crystal fox in an enchanted forest..."></textarea>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-1/2">
-                                <label for="width" class="text-sm font-medium text-text-secondary mb-2 block">Width:</label>
-                                <input type="number" id="width" min="1" class="neo-inset" placeholder="512">
-                            </div>
-                            <div class="w-1/2">
-                                <label for="height" class="text-sm font-medium text-text-secondary mb-2 block">Height:</label>
-                                <input type="number" id="height" min="1" class="neo-inset" placeholder="512">
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <button type="button" id="voiceInputButton" class="btn neo-outset w-16" title="Voice Input">
-                                <i class="fas fa-microphone text-xl"></i>
-                            </button>
-                            <button type="button" id="surpriseMeButton" class="btn neo-outset w-16" title="Surprise Me">
-                                <i class="fas fa-dice text-xl"></i>
-                            </button>
-                            <button type="submit" id="generateButton" class="btn btn-primary neo-outset flex-grow">
-                                <span>Create ✨</span>
-                            </button>
-                        </div>
-                    </form>
-                    <div id="resultContainer" class="mt-6 hidden">
-                        <div class="card neo-outset p-4">
-                            <div id="skeletonLoader" class="neo-inset" style="aspect-ratio:1/1;"></div>
-                            <div id="imageOutput" class="hidden text-center space-y-4">
-                                <h3 class="font-bold text-lg">Generated Image:</h3>
-                                <img id="generatedImage" src="" alt="AI Image" class="rounded-lg shadow-inner w-full">
-                                <a id="downloadButton" href="" download="haldarai-image.png" class="btn btn-primary neo-outset w-full">
-                                    <i class="fas fa-download mr-2"></i> Download
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+  <!-- Header -->
+  <header class="bg-purple-700 bg-opacity-80 backdrop-blur text-white py-4 px-6 flex items-center justify-center shadow-md">
+    <h1 class="text-lg font-semibold">YT Copy Generator</h1>
+  </header>
 
-            <!-- Prompt Studio -->
-            <section id="view-promptstudio" class="app-view">
-                <div class="card neo-outset space-y-6">
-                  <h2 class="text-2xl font-bold text-center text-text-secondary">Prompt Studio</h2>
-                  <form id="promptbookForm" class="space-y-6">
-                      <div>
-                          <label for="promptbook" class="text-sm font-medium text-text-secondary mb-2 block">Prompt / Question:</label>
-                          <input type="text" id="promptbook" class="neo-inset" required placeholder="Example: What are 2024 sales by top category?">
-                      </div>
-                      <div>
-                          <label for="datasource" class="text-sm font-medium text-text-secondary mb-2 block">Data Source:</label>
-                          <input type="text" id="datasource" class="neo-inset" placeholder="Upload CSV, Google Sheets URL, etc.">
-                      </div>
-                      <div class="flex gap-4">
-                          <button type="submit" id="runPromptbook" class="btn btn-primary neo-outset flex-grow">
-                              <span>Run Promptbook</span>
-                          </button>
-                      </div>
-                  </form>
-                  <div id="promptStudioResultContainer" class="mt-6 hidden">
-                      <div class="card neo-outset p-4">
-                         <div id="promptStudioResult" class="text-center space-y-4"></div>
-                      </div>
-                  </div>
-                </div>
-            </section>
+  <!-- Main Content -->
+  <main class="flex-1 max-w-md w-full mx-auto p-4 space-y-6 relative z-10">
 
-            <!-- Dashboard -->
-            <section id="view-dashboard" class="app-view">
-                <div class="card neo-outset space-y-5">
-                    <h2 class="text-2xl font-bold mb-2 text-center text-primary">Dashboard</h2>
-                    <div class="grid grid-cols-1 gap-3">
-                        <div class="dashboard-stat-card">
-                            <h3 id="statImages">0</h3>
-                            <p>Images Generated</p>
-                        </div>
-                        <div class="dashboard-stat-card">
-                            <h3 id="statPromptbooks">0</h3>
-                            <p>Promptbooks Created</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Creations Library -->
-            <section id="view-creations" class="app-view">
-                <div class="card neo-outset space-y-3">
-                  <h2 class="text-2xl font-bold text-center text-text-secondary">Library</h2>
-                  <div id="creationsContainer"></div>
-                </div>
-            </section>
-
-            <!-- Settings -->
-            <section id="view-settings" class="app-view space-y-6">
-                 <div class="card neo-outset">
-                    <h2 class="text-xl font-bold mb-2">About HaldarAi+</h2>
-                    <p class="text-sm text-text-secondary">
-                        HaldarAi+ combines AI image generation, productivity dashboard, and collaborative prompt engineering tools in a unified, privacy-first app.
-                    </p>
-                </div>
-                <div class="card neo-outset">
-                    <h2 class="text-xl font-bold mb-2">Danger Zone</h2>
-                    <p class="text-sm text-text-secondary mb-4">
-                       Permanently delete all saved data. This cannot be undone.
-                    </p>
-                    <button id="resetAllButton" class="btn neo-outset w-full text-red-500">Reset All Data</button>
-                </div>
-            </section>
-        </main>
-
-        <!-- Bottom Navigation Bar -->
-        <nav class="bottom-nav">
-            <button class="nav-button active" data-view-target="generator">
-                <i class="fas fa-magic"></i>
-                <span>Generator</span>
-            </button>
-            <button class="nav-button" data-view-target="promptstudio">
-                <i class="fas fa-brain"></i>
-                <span>Prompt Studio</span>
-            </button>
-            <button class="nav-button" data-view-target="dashboard">
-                <i class="fas fa-chart-line"></i>
-                <span>Dashboard</span>
-            </button>
-            <button class="nav-button" data-view-target="creations">
-                <i class="fas fa-folder-open"></i>
-                <span>Library</span>
-            </button>
-            <button class="nav-button" data-view-target="settings">
-                <i class="fas fa-cog"></i>
-                <span>Settings</span>
-            </button>
-        </nav>
+    <!-- API Key Modal -->
+    <div id="apiModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+      <div class="bg-white rounded-2xl shadow-xl p-6 w-80 fade-in">
+        <h2 class="text-base font-semibold text-purple-700 mb-3 text-center">Enter Gemini API Key</h2>
+        <input id="modalApiKey" type="password" placeholder="AIza…" class="w-full border rounded-lg p-3 mb-4 focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+        <button id="saveApiKey" class="bg-purple-600 hover:bg-purple-700 transition text-white px-4 py-2 rounded-lg w-full font-medium pulse">Save Key</button>
+      </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast"></div>
+    <!-- Home Screen -->
+    <section id="homeScreen" class="fade-in">
+      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 text-center space-y-4">
+        <h2 class="text-xl font-semibold text-purple-700">Welcome 🎉</h2>
+        <p class="text-gray-700 text-sm">Generate professional YouTube titles, descriptions, tags, and more with Gemini AI. Use the bottom nav to get started.</p>
+      </div>
+    </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- Theme ---
-        const themeToggle = document.getElementById('themeToggle');
-        const htmlElement = document.documentElement;
-        const sunIcon = themeToggle.querySelector('.fa-sun');
-        const moonIcon = themeToggle.querySelector('.fa-moon');
-        function applyTheme(theme) {
-            htmlElement.classList.remove('light', 'dark');
-            htmlElement.classList.add(theme);
-            sunIcon.classList.toggle('hidden', theme === 'dark');
-            moonIcon.classList.toggle('hidden', theme === 'light');
-            localStorage.setItem('theme', theme);
-        }
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        applyTheme(savedTheme);
-        themeToggle.addEventListener('click', () => {
-            const newTheme = htmlElement.classList.contains('dark') ? 'light' : 'dark';
-            applyTheme(newTheme);
-        });
+    <!-- Generate Screen -->
+    <section id="generateScreen" class="hidden-screen fade-in">
+      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-5 space-y-4">
+        <h2 class="text-base font-semibold text-purple-700">Configuration</h2>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600" for="apiKey">Gemini API Key</label>
+            <input id="apiKey" type="password" placeholder="AIza…" class="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1 text-gray-600" for="brief">Topic / Brief</label>
+            <textarea id="brief" class="w-full border rounded-xl p-3 min-h-[100px] text-sm focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="Enter your video idea..."></textarea>
+          </div>
+          <button id="generate" class="bg-purple-600 hover:bg-purple-700 transition text-white px-5 py-3 rounded-xl w-full font-semibold shadow-md">⚡ Generate</button>
+        </div>
+      </div>
+      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-5 space-y-4 mt-4">
+        <h2 class="text-base font-semibold text-purple-700">Generated Copy</h2>
+        <pre id="output" class="whitespace-pre-wrap text-sm bg-purple-50 p-3 rounded-lg border border-purple-200 overflow-x-auto min-h-[160px]">Your results will appear here...</pre>
+      </div>
+    </section>
 
-        // --- Surprise Prompts ---
-        const promptInput = document.getElementById('prompt');
-        const surpriseMeButton = document.getElementById('surpriseMeButton');
-        const randomPrompts = [
-            "A serene mountain landscape at sunrise",
-            "A futuristic city with neon lights",
-            "A mystical forest with glowing plants",
-            "An abstract pattern of vibrant colors",
-            "A dreamy underwater world with coral reefs"
-        ];
-        surpriseMeButton.addEventListener('click', () => {
-            const randomIndex = Math.floor(Math.random() * randomPrompts.length);
-            promptInput.value = randomPrompts[randomIndex];
-        });
+    <!-- History Screen -->
+    <section id="historyScreen" class="hidden-screen fade-in">
+      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 space-y-4">
+        <h2 class="text-base font-semibold text-purple-700">History</h2>
+        <ul id="historyList" class="space-y-2 text-sm text-gray-700">
+          <li>No history yet...</li>
+        </ul>
+      </div>
+    </section>
 
-        // --- Voice Input ---
-        const voiceInputButton = document.getElementById('voiceInputButton');
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = "en-US";
-            recognition.interimResults = false;
-            voiceInputButton.addEventListener("click", () => {
-                recognition.start();
-                showToast('Listening...', 'success');
-            });
-            recognition.onresult = (event) => {
-                const transcript = event.results.transcript;
-                promptInput.value = transcript;
-            };
-            recognition.onerror = () => showToast("Sorry, couldn't recognize speech.", 'error');
-        } else {
-            voiceInputButton.disabled = true;
-            voiceInputButton.title = "Voice input not supported.";
-        }
+    <!-- Settings Screen -->
+    <section id="settingsScreen" class="hidden-screen fade-in">
+      <div class="bg-white bg-opacity-80 backdrop-blur rounded-2xl shadow-lg p-6 space-y-4">
+        <h2 class="text-base font-semibold text-purple-700">Settings</h2>
+        <button id="changeApiKey" class="bg-purple-600 hover:bg-purple-700 transition text-white px-5 py-3 rounded-xl w-full font-semibold shadow-md">🔑 Change API Key</button>
+        <button id="clearHistory" class="bg-gray-200 hover:bg-gray-300 transition text-gray-700 px-5 py-3 rounded-xl w-full font-medium">🗑️ Clear History</button>
+      </div>
+    </section>
+  </main>
 
-        // --- View Navigation ---
-        const navButtons = document.querySelectorAll('.nav-button');
-        const views = document.querySelectorAll('.app-view');
-        function switchView(target) {
-            views.forEach(view => view.classList.toggle('active', view.id === `view-${target}`));
-            navButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.viewTarget === target));
-            if(target === "creations") renderCreations();
-            if(target === "dashboard") refreshDashboardStats();
-        }
-        navButtons.forEach(btn => btn.addEventListener('click', () => switchView(btn.dataset.viewTarget)));
+  <!-- Footer / Bottom Nav -->
+  <footer class="bg-white bg-opacity-80 backdrop-blur py-3 border-t shadow-inner relative z-10">
+    <div class="max-w-md mx-auto flex justify-around text-purple-700 text-sm">
+      <button data-screen="homeScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
+        <span>🏠</span>
+        <span>Home</span>
+      </button>
+      <button data-screen="generateScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
+        <span>⚡</span>
+        <span>Generate</span>
+      </button>
+      <button data-screen="historyScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
+        <span>📜</span>
+        <span>History</span>
+      </button>
+      <button data-screen="settingsScreen" class="navBtn flex flex-col items-center focus:text-purple-900">
+        <span>⚙️</span>
+        <span>Settings</span>
+      </button>
+    </div>
+  </footer>
 
-        // --- Local Data ---
-        const STORAGE_KEY_IMAGES = 'haldarAiPlusImages';
-        const STORAGE_KEY_PROMPTBOOKS = 'haldarAiPlusPromptbooks';
-        const getCreations = () => JSON.parse(localStorage.getItem(STORAGE_KEY_IMAGES)) || [];
-        const saveCreations = (arr) => localStorage.setItem(STORAGE_KEY_IMAGES, JSON.stringify(arr));
-        const getPromptbooks = () => JSON.parse(localStorage.getItem(STORAGE_KEY_PROMPTBOOKS)) || [];
-        const savePromptbooks = (arr) => localStorage.setItem(STORAGE_KEY_PROMPTBOOKS, JSON.stringify(arr));
+  <script>
+    const apiKeyEl = document.getElementById('apiKey');
+    const briefEl = document.getElementById('brief');
+    const outputEl = document.getElementById('output');
+    const generateBtn = document.getElementById('generate');
+    const apiModal = document.getElementById('apiModal');
+    const modalApiKey = document.getElementById('modalApiKey');
+    const saveApiKeyBtn = document.getElementById('saveApiKey');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryBtn = document.getElementById('clearHistory');
+    const changeApiKeyBtn = document.getElementById('changeApiKey');
 
-        // --- Image Generation Logic ---
-        const imageForm = document.getElementById('imageForm');
-        const generateButton = document.getElementById('generateButton');
-        const resultContainer = document.getElementById('resultContainer');
-        const skeletonLoader = document.getElementById('skeletonLoader');
-        const imageOutput = document.getElementById('imageOutput');
-        imageForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const prompt = document.getElementById('prompt').value;
-            const width = document.getElementById('width').value || 512;
-            const height = document.getElementById('height').value || 512;
-            resultContainer.classList.remove('hidden');
-            skeletonLoader.style.display = 'block';
-            imageOutput.classList.add('hidden');
-            generateButton.disabled = true;
-            const encodedPrompt = encodeURIComponent(prompt);
-            const seed = Math.floor(Math.random() * 1000000);
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=${width}&height=${height}&seed=${seed}&nologo=true`;
-            const img = new Image();
-            img.crossOrigin = "anonymous";
-            img.src = imageUrl;
-            img.onload = () => {
-                document.getElementById('generatedImage').src = imageUrl;
-                document.getElementById('downloadButton').href = imageUrl;
-                const creations = getCreations();
-                creations.unshift({ id: Date.now(), prompt, imageUrl });
-                saveCreations(creations);
-                skeletonLoader.style.display = 'none';
-                imageOutput.classList.remove('hidden');
-                generateButton.disabled = false;
-                showToast('Image generated!', 'success');
-                refreshDashboardStats();
-            };
-            img.onerror = () => {
-                resultContainer.classList.add('hidden');
-                generateButton.disabled = false;
-                showToast('Failed to generate image.', 'error');
-            };
-        });
+    // Screens
+    const screens = document.querySelectorAll('main section');
+    const navBtns = document.querySelectorAll('.navBtn');
 
-        // --- Render Creations Library ---
-        function renderCreations() {
-            const creationsContainer = document.getElementById('creationsContainer');
-            creationsContainer.innerHTML = '';
-            const creations = getCreations();
-            if (creations.length === 0) {
-                creationsContainer.innerHTML = `<div class="text-center text-text-secondary"><p>No images generated yet.</p></div>`;
-                return;
-            }
-            creations.forEach(c => {
-                const item = document.createElement('div');
-                item.className = 'creation-item neo-outset mb-2 flex gap-3 items-center';
-                item.innerHTML = `<img src="${c.imageUrl}" alt="Thumbnail" style="width:60px;height:60px;border-radius:0.5rem;object-fit:cover;"><div><h4 class="font-semibold break-words">${c.prompt}</h4><p class="text-xs text-text-secondary">${new Date(c.id).toLocaleString()}</p></div>`;
-                creationsContainer.appendChild(item);
-            });
-        }
-        // --- Prompt Studio Logic ---
-        const promptbookForm = document.getElementById('promptbookForm');
-        const runPromptbookBtn = document.getElementById('runPromptbook');
-        const promptStudioResultContainer = document.getElementById('promptStudioResultContainer');
-        const promptStudioResult = document.getElementById('promptStudioResult');
-        promptbookForm.addEventListener('submit', (event) => {
-            event.preventDefault();
-            const question = document.getElementById('promptbook').value;
-            const dataSrc = document.getElementById('datasource').value;
-            promptStudioResultContainer.classList.remove('hidden');
-            promptStudioResult.innerHTML = `<div><strong>Prompt:</strong> ${question}</div><div><strong>Data Source:</strong> ${dataSrc || 'None'}</div><div><strong>Result:</strong> <em>[AI-generated answer or insight would go here]</em></div>`;
-            const books = getPromptbooks();
-            books.unshift({ id: Date.now(), question, dataSrc });
-            savePromptbooks(books);
-            showToast('Promptbook run!', 'success');
-            refreshDashboardStats();
-        });
-
-        // --- Dashboard Stats Refresh ---
-        function refreshDashboardStats() {
-            document.getElementById('statImages').textContent = getCreations().length;
-            document.getElementById('statPromptbooks').textContent = getPromptbooks().length;
-        }
-
-        // --- Settings: Data Reset ---
-        document.getElementById('resetAllButton').addEventListener('click', () => {
-            saveCreations([]);
-            savePromptbooks([]);
-            renderCreations();
-            refreshDashboardStats();
-            showToast('All data has been reset.', 'success');
-        });
-
-        // --- Toast Notification ---
-        const toast = document.getElementById('toast');
-        function showToast(message, type = 'success') {
-            toast.textContent = message;
-            toast.style.background = type === 'success' ? 'linear-gradient(90deg,#3b82f6,#60a5fa)' : "#ef4444";
-            toast.style.opacity = 1;
-            setTimeout(() => { toast.style.opacity = 0; }, 2800);
-        }
-
-        // --- Initialization ---
-        switchView('generator');
-        refreshDashboardStats();
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-screen');
+        screens.forEach(sec => sec.classList.add('hidden-screen'));
+        document.getElementById(target).classList.remove('hidden-screen');
+      });
     });
-</script>
+
+    // Show modal on first load if no key is stored
+    window.addEventListener('load', () => {
+      const storedKey = localStorage.getItem('geminiApiKey');
+      if (!storedKey) {
+        apiModal.classList.remove('hidden');
+      } else {
+        apiKeyEl.value = storedKey;
+      }
+      loadHistory();
+    });
+
+    // Save key from modal
+    saveApiKeyBtn.addEventListener('click', () => {
+      const key = modalApiKey.value.trim();
+      if (key) {
+        localStorage.setItem('geminiApiKey', key);
+        apiKeyEl.value = key;
+        apiModal.classList.add('hidden');
+      }
+    });
+
+    changeApiKeyBtn.addEventListener('click', () => {
+      apiModal.classList.remove('hidden');
+    });
+
+    async function callGemini(prompt) {
+      const apiKey = apiKeyEl.value.trim();
+      if (!apiKey) {
+        alert('Enter Gemini API key');
+        return;
+      }
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      const body = { contents: [{ role: "user", parts: [{ text: prompt }] }] };
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || JSON.stringify(data, null, 2);
+    }
+
+    function saveHistory(entry) {
+      let history = JSON.parse(localStorage.getItem('ytHistory') || '[]');
+      history.unshift(entry);
+      localStorage.setItem('ytHistory', JSON.stringify(history));
+      loadHistory();
+    }
+
+    function loadHistory() {
+      let history = JSON.parse(localStorage.getItem('ytHistory') || '[]');
+      historyList.innerHTML = history.length ? '' : '<li>No history yet...</li>';
+      history.forEach(item => {
+        const li = document.createElement('li');
+        li.className = "bg-purple-50 p-2 rounded border text-gray-700";
+        li.textContent = item;
+        historyList.appendChild(li);
+      });
+    }
+
+    clearHistoryBtn.addEventListener('click', () => {
+      localStorage.removeItem('ytHistory');
+      loadHistory();
+    });
+
+    generateBtn.addEventListener('click', async () => {
+      outputEl.textContent = "Generating...";
+      const text = briefEl.value.trim();
+      if (!text) { outputEl.textContent = "Enter a topic first."; return; }
+      const result = await callGemini("Generate a professional YouTube title, description, tags, hashtags, and SEO copy for: " + text);
+      outputEl.textContent = result;
+      saveHistory(result);
+    });
+  </script>
 </body>
 </html>
