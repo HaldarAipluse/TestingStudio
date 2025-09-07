@@ -3,212 +3,303 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Scanner with Firebase Auth</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+<title>Auth + QR Scanner</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://unpkg.com/html5-qrcode"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-
-* { margin:0; padding:0; box-sizing:border-box; font-family:'Poppins', sans-serif; }
-body { background:#0B85FF; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-
-.container, .scanner-wrapper { display:none; background:#fff; border-radius:15px; padding:30px; width:360px; max-width:95%; text-align:center; box-shadow:0 8px 25px rgba(0,0,0,0.15); }
-
-h2 { margin-bottom:20px; color:#0B85FF; }
-input { width:100%; padding:12px; margin:10px 0; border-radius:8px; border:1px solid #ccc; outline:none; font-size:16px; }
-button { width:100%; padding:12px; margin-top:15px; border:none; border-radius:8px; background:#0B85FF; color:#fff; font-weight:600; font-size:16px; cursor:pointer; transition:0.3s; }
-button:hover { background:#0868c1; }
-.google-btn { background:#DB4437; color:#fff; display:flex; justify-content:center; align-items:center; gap:10px; }
-.google-btn:hover { background:#c13527; }
-p { margin-top:15px; font-size:14px; color:#555; }
-a { color:#0B85FF; cursor:pointer; text-decoration:underline; }
-
-#error { color:red; margin-top:5px; font-size:14px; }
-
-#logout-btn { position:absolute; top:15px; right:15px; background:#0B85FF; color:#fff; width:auto; padding:8px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:600; transition:0.3s; }
-#logout-btn:hover { background:#0868c1; }
-
-form { display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; margin-top:20px; }
-form:hover { transform:scale(1.02); transition:0.3s; }
-form img { display:none; max-width:200px; margin-bottom:15px; border-radius:10px; }
-form.active img { display:block; }
-form .content i { font-size:60px; color:#0B85FF; }
-form .content p { margin-top:10px; font-size:16px; color:#0B85FF; font-weight:500; }
-
-.details { margin-top:20px; display:flex; flex-direction:column; align-items:center; opacity:0; transition:0.3s; width:100%; }
-.details.active { opacity:1; }
-.details textarea { width:100%; height:150px; resize:none; border-radius:8px; border:1px solid #0B85FF; padding:12px; background:#0B85FF; color:#fff; font-size:16px; outline:none; }
-.details .buttons { display:flex; justify-content:space-between; width:100%; margin-top:15px; }
-.buttons button { width:48%; height:50px; border-radius:8px; font-weight:600; }
-@media(max-width:450px){ .scanner-wrapper{width:95%;} form img{max-width:150px;} .details textarea{height:120px;} }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:#0B85FF;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow-x:hidden;}
+.container,.scanner-wrapper,.modal{
+  display:none;background:#fff;border-radius:16px;padding:30px;width:360px;max-width:95%;
+  text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15);animation:fadeIn .6s ease forwards;position:relative;
+}
+h2{margin-bottom:20px;color:#0B85FF;}
+input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ccc;font-size:15px;outline:none;}
+button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#0B85FF;color:#fff;
+  font-weight:600;font-size:15px;cursor:pointer;transition:.3s;}
+button:hover{background:#0868c1;transform:scale(1.03);}
+p{margin-top:15px;font-size:14px;color:#555;}
+a{color:#0B85FF;cursor:pointer;text-decoration:none;font-weight:500;}
+a:hover{text-decoration:underline;}
+.error{margin-top:10px;font-size:13px;color:#d93025;}
+.success{margin-top:10px;font-size:13px;color:#0b8a00;}
+#logout-btn{position:absolute;top:15px;right:15px;background:#0B85FF;color:#fff;width:auto;padding:7px 14px;
+  border-radius:6px;font-size:13px;cursor:pointer;transition:.3s;}
+#logout-btn:hover{background:#0868c1;}
+/* Upload Box */
+.upload-box {width:100%;border:2px dashed #0B85FF;border-radius:14px;padding:25px;text-align:center;
+  transition:.3s;background:#f8fbff;cursor:pointer;}
+.upload-box:hover{background:#eef6ff;transform:scale(1.02);}
+.upload-area i{font-size:60px;color:#0B85FF;margin-bottom:10px;}
+.upload-area p{font-size:14px;color:#555;margin-bottom:10px;}
+.upload-area img{display:none;max-width:200px;border-radius:10px;margin-top:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);animation:fadeIn .5s ease forwards;}
+.upload-box.active img{display:block;}
+/* Details */
+.details{margin-top:20px;display:flex;flex-direction:column;align-items:center;opacity:0;transition:.4s;width:100%;}
+.details.active{opacity:1;}
+.details textarea{width:100%;height:150px;resize:none;border-radius:8px;border:1px solid #0B85FF;
+  padding:12px;background:#0B85FF;color:#fff;font-size:14px;}
+.details .buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
+.buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
+/* Overlay + Modal */
+.overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:90;}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
+  width:380px;max-width:95%;z-index:100;animation:popup .3s ease forwards;}
+.modal h2{color:#0B85FF;font-size:20px;margin-bottom:10px;}
+.modal input{margin-top:10px;}
+.modal button{margin-top:15px;}
+.close-modal{position:absolute;top:10px;right:15px;font-size:20px;color:#555;cursor:pointer;}
+/* Stepper */
+.steps{margin-top:20px;text-align:left;}
+.step{display:flex;align-items:center;margin-bottom:12px;opacity:.4;transition:.4s;}
+.step span{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#ddd;color:#555;font-weight:600;margin-right:10px;}
+.step.active{opacity:1;transform:translateX(5px);}
+.step.active span{background:#0B85FF;color:#fff;}
+.step p{margin:0;font-size:14px;color:#333;}
+/* Toggle Buttons */
+.toggle-buttons { display:flex; gap:10px; margin:15px 0; }
+.toggle-buttons button { flex:1; font-size:14px; background:#ddd; color:#333; }
+.toggle-buttons button.active { background:#0B85FF; color:#fff; }
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popup{from{opacity:0;transform:translate(-50%,-50%) scale(.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
 </style>
 </head>
 <body>
-
 <!-- Login -->
 <div class="container" id="login-container">
   <h2>Login</h2>
-  <button class="google-btn" id="google-signin"><i class="fab fa-google"></i> Sign in with Google</button>
-  <p style="margin:10px 0; font-weight:bold;">or</p>
   <input type="email" id="login-email" placeholder="Email">
   <input type="password" id="login-password" placeholder="Password">
   <button id="login-btn">Login</button>
-  <p id="login-error"></p>
+  <div class="error" id="login-error"></div>
+  <p><a id="show-forgot">Forgot Password?</a></p>
   <p>Don't have an account? <a id="show-register">Register</a></p>
 </div>
 
 <!-- Register -->
 <div class="container" id="register-container">
   <h2>Register</h2>
-  <button class="google-btn" id="google-signup"><i class="fab fa-google"></i> Sign up with Google</button>
-  <p style="margin:10px 0; font-weight:bold;">or</p>
   <input type="email" id="register-email" placeholder="Email">
   <input type="password" id="register-password" placeholder="Password">
   <button id="register-btn">Register</button>
-  <p id="register-error"></p>
+  <div class="error" id="register-error"></div>
+  <div id="register-instructions" style="display:none;">
+    <h3>Email Verification</h3>
+    <div class="steps" id="verify-steps">
+      <div class="step"><span>1</span><p>Verification email sent</p></div>
+      <div class="step"><span>2</span><p>Open your inbox (check spam)</p></div>
+      <div class="step"><span>3</span><p>Click the link to verify</p></div>
+      <div class="step"><span>4</span><p>Return here & login</p></div>
+    </div>
+  </div>
   <p>Already have an account? <a id="show-login">Login</a></p>
 </div>
 
 <!-- QR Scanner -->
 <div class="scanner-wrapper" id="scanner-wrapper">
   <button id="logout-btn">Logout</button>
-  <form id="upload-form">
-    <img id="qr-image" src="#" alt="QR Code">
-    <div class="content">
-      <i class="fas fa-cloud-upload"></i>
-      <p>Click to Upload QR Code</p>
+  <div class="toggle-buttons">
+    <button id="camera-mode">Camera Scan</button>
+    <button id="upload-mode">Upload Scan</button>
+  </div>
+  <div id="reader" style="width:100%;max-width:320px;margin:auto;display:none;"></div>
+  <form id="upload-form" class="upload-box" style="display:none;">
+    <div class="upload-area">
+      <i class="fas fa-cloud-upload-alt"></i>
+      <p>Click or Drop QR Code Image</p>
+      <img id="qr-image" src="#" alt="QR Preview">
     </div>
     <input type="file" id="file-input" hidden>
   </form>
   <div class="details" id="details">
-    <textarea id="qr-result" disabled spellcheck="false"></textarea>
+    <textarea id="qr-result" disabled></textarea>
     <div class="buttons">
-      <button class="close">Close</button>
+      <button class="close">Clear</button>
       <button class="copy">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="overlay" id="overlay"></div>
+<div class="modal" id="forgot-modal">
+  <span class="close-modal">&times;</span>
+  <h2>Reset Password</h2>
+  <p style="font-size:13px;color:#555;">Enter your email address and we’ll send you a reset link.</p>
+  <input type="email" id="reset-email" placeholder="Your email">
+  <button id="reset-btn">Send Reset Link</button>
+  <div id="reset-instructions" style="display:none;">
+    <div class="steps" id="reset-steps">
+      <div class="step"><span>1</span><p>Reset email sent</p></div>
+      <div class="step"><span>2</span><p>Check your inbox (and spam)</p></div>
+      <div class="step"><span>3</span><p>Click the reset link</p></div>
+      <div class="step"><span>4</span><p>Set new password & login</p></div>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyBF8WGFStX62SCFqhMzqcvIFI0LZTJfd30",
-  authDomain: "social-media-420.firebaseapp.com",
-  projectId: "social-media-420",
-  storageBucket: "social-media-420.firebasestorage.app",
-  messagingSenderId: "137093270524",
-  appId: "1:137093270524:web:2847379ede160b6c73c079"
-};
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const firebaseConfig={apiKey:"AIzaSyBF8WGFStX62SCFqhMzqcvIFI0LZTJfd30",authDomain:"social-media-420.firebaseapp.com",projectId:"social-media-420",storageBucket:"social-media-420.appspot.com",messagingSenderId:"137093270524",appId:"1:137093270524:web:2847379ede160b6c73c079"};
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+setPersistence(auth,browserSessionPersistence);
 
 // Elements
-const loginContainer = document.getElementById("login-container");
-const registerContainer = document.getElementById("register-container");
-const scannerWrapper = document.getElementById("scanner-wrapper");
+const loginContainer=document.getElementById("login-container");
+const registerContainer=document.getElementById("register-container");
+const scannerWrapper=document.getElementById("scanner-wrapper");
+const loginEmail=document.getElementById("login-email");
+const loginPassword=document.getElementById("login-password");
+const loginBtn=document.getElementById("login-btn");
+const loginError=document.getElementById("login-error");
+const registerEmail=document.getElementById("register-email");
+const registerPassword=document.getElementById("register-password");
+const registerBtn=document.getElementById("register-btn");
+const registerError=document.getElementById("register-error");
+const registerInstructions=document.getElementById("register-instructions");
+const showRegister=document.getElementById("show-register");
+const showLogin=document.getElementById("show-login");
+const showForgot=document.getElementById("show-forgot");
+const logoutBtn=document.getElementById("logout-btn");
+const form=document.getElementById("upload-form");
+const fileInput=document.getElementById("file-input");
+const qrImage=document.getElementById("qr-image");
+const qrResult=document.getElementById("qr-result");
+const details=document.getElementById("details");
+const closeBtn=document.querySelector(".close");
+const copyBtn=document.querySelector(".copy");
+const overlay=document.getElementById("overlay");
+const forgotModal=document.getElementById("forgot-modal");
+const closeModal=document.querySelector(".close-modal");
+const resetEmail=document.getElementById("reset-email");
+const resetBtn=document.getElementById("reset-btn");
+const resetInstructions=document.getElementById("reset-instructions");
+const reader=document.getElementById("reader");
+const cameraMode=document.getElementById("camera-mode");
+const uploadMode=document.getElementById("upload-mode");
 
-const loginEmail = document.getElementById("login-email");
-const loginPassword = document.getElementById("login-password");
-const loginBtnEl = document.getElementById("login-btn");
-const loginError = document.getElementById("login-error");
+let html5QrCode=null;
 
-const registerEmail = document.getElementById("register-email");
-const registerPassword = document.getElementById("register-password");
-const registerBtnEl = document.getElementById("register-btn");
-const registerError = document.getElementById("register-error");
+// UI Switch
+function showLoginUI(){loginContainer.style.display="block";registerContainer.style.display="none";scannerWrapper.style.display="none";}
+function showRegisterUI(){loginContainer.style.display="none";registerContainer.style.display="block";scannerWrapper.style.display="none";}
+function showScannerUI(){loginContainer.style.display="none";registerContainer.style.display="none";scannerWrapper.style.display="block";}
+showLoginUI();
+showRegister.addEventListener("click",showRegisterUI);
+showLogin.addEventListener("click",showLoginUI);
 
-const showRegisterLink = document.getElementById("show-register");
-const showLoginLink = document.getElementById("show-login");
-const logoutBtn = document.getElementById("logout-btn");
+// Modal
+showForgot.addEventListener("click",()=>{overlay.style.display="block";forgotModal.style.display="block";});
+closeModal.addEventListener("click",()=>{overlay.style.display="none";forgotModal.style.display="none";resetInstructions.style.display="none";});
 
-const googleSignInBtn = document.getElementById("google-signin");
-const googleSignUpBtn = document.getElementById("google-signup");
-
-const form = document.getElementById("upload-form");
-const fileInput = document.getElementById("file-input");
-const qrImage = document.getElementById("qr-image");
-const qrResult = document.getElementById("qr-result");
-const details = document.getElementById("details");
-const closeBtn = document.querySelector(".close");
-const copyBtn = document.querySelector(".copy");
-const infoText = form.querySelector(".content p");
-
-// Show/Hide sections
-function showLogin(){ loginContainer.style.display="block"; registerContainer.style.display="none"; scannerWrapper.style.display="none"; }
-function showRegister(){ loginContainer.style.display="none"; registerContainer.style.display="block"; scannerWrapper.style.display="none"; }
-function showScanner(){ loginContainer.style.display="none"; registerContainer.style.display="none"; scannerWrapper.style.display="block"; }
-
-// Default
-showLogin();
-showRegisterLink.addEventListener("click", showRegister);
-showLoginLink.addEventListener("click", showLogin);
-
-// Firebase Email/Password Auth
-loginBtnEl.addEventListener("click", ()=>{
-  signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
-    .then(()=>{ loginError.innerText=""; showScanner(); })
-    .catch(err=>loginError.innerText=err.message);
-});
-registerBtnEl.addEventListener("click", ()=>{
-  createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value)
-    .then(()=>{ registerError.innerText=""; showScanner(); })
-    .catch(err=>registerError.innerText=err.message);
-});
-
-// Google Sign-In
-googleSignInBtn.addEventListener("click", ()=>{
-  signInWithPopup(auth, provider).then(()=>showScanner());
-});
-googleSignUpBtn.addEventListener("click", ()=>{
-  signInWithPopup(auth, provider).then(()=>showScanner());
-});
-
-// Logout
-logoutBtn.addEventListener("click", ()=>{
-  signOut(auth).then(()=>{
-    showLogin(); 
-    details.classList.remove("active"); 
-    form.classList.remove("active"); 
-    qrImage.src=""; qrResult.value="";
-  });
-});
-
-// QR Scanner
-function fetchRequest(file, formData){
-  infoText.innerText = "Scanning QR Code...";
-  fetch("https://api.qrserver.com/v1/read-qr-code/", { method:'POST', body:formData })
-    .then(res=>res.json())
-    .then(result=>{
-      const data = result[0]?.symbol[0]?.data;
-      infoText.innerText = data ? "Click to Upload QR Code" : "Couldn't scan QR Code";
-      if(!data) return;
-      qrResult.value = data;
-      qrImage.src = URL.createObjectURL(file);
-      form.classList.add("active");
-      details.classList.add("active");
-    }).catch(()=>{ infoText.innerText="Couldn't scan QR Code"; });
+// Stepper
+function showSteps(id){
+const steps=document.querySelectorAll("#"+id+" .step");let i=0;
+steps.forEach(s=>s.classList.remove("active"));
+let interval=setInterval(()=>{if(i<steps.length){steps[i].classList.add("active");i++;}else clearInterval(interval);},1100);
 }
 
-form.addEventListener("click", ()=>fileInput.click());
-fileInput.addEventListener("change", e=>{
-  const file = e.target.files[0];
-  if(!file) return;
-  const formData = new FormData();
-  formData.append('file', file);
-  fetchRequest(file, formData);
+// Auth
+loginBtn.addEventListener("click",()=>{
+signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
+.then(()=>{loginError.innerText="";showScannerUI();enableCameraMode();})
+.catch(err=>loginError.innerText=err.message);
+});
+registerBtn.addEventListener("click",()=>{
+createUserWithEmailAndPassword(auth,registerEmail.value,registerPassword.value)
+.then(userCred=>{
+sendEmailVerification(userCred.user);
+registerError.innerText="";registerInstructions.style.display="block";showSteps("verify-steps");
+})
+.catch(err=>registerError.innerText=err.message);
+});
+resetBtn.addEventListener("click",()=>{
+if(!resetEmail.value){alert("Enter your email.");return;}
+sendPasswordResetEmail(auth,resetEmail.value)
+.then(()=>{
+resetInstructions.style.display="block";showSteps("reset-steps");
+setTimeout(()=>{overlay.style.display="none";forgotModal.style.display="none";resetInstructions.style.display="none";},6000);
+})
+.catch(err=>alert(err.message));
+});
+logoutBtn.addEventListener("click",()=>{
+signOut(auth).then(()=>{showLoginUI();stopCamera();details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
 });
 
-closeBtn.addEventListener("click", ()=>{
-  details.classList.remove("active");
-  form.classList.remove("active");
-  qrImage.src="";
-  qrResult.value="";
+// QR Upload
+function fetchRequest(file,formData){
+fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
+.then(res=>res.json())
+.then(result=>{
+const data=result[0]?.symbol[0]?.data;
+if(!data){alert("QR Code not detected.");return;}
+qrResult.value=data;
+form.classList.add("active");
+details.classList.add("active");
+}).catch(err=>{console.error("QR Upload Error:",err);alert("Failed to read QR code.");});
+}
+form.addEventListener("click",()=>fileInput.click());
+fileInput.addEventListener("change",e=>{
+const file=e.target.files[0];if(!file)return;
+const formData=new FormData();formData.append('file',file);
+qrImage.src=URL.createObjectURL(file);
+fetchRequest(file,formData);
 });
-copyBtn.addEventListener("click", ()=>navigator.clipboard.writeText(qrResult.value));
+closeBtn.addEventListener("click",()=>{details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
+copyBtn.addEventListener("click",()=>{
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(qrResult.value).then(()=>alert("Copied to clipboard!"))
+    .catch(()=>fallbackCopy(qrResult.value));
+  } else {
+    fallbackCopy(qrResult.value);
+  }
+});
+function fallbackCopy(text){
+  let textarea=document.createElement("textarea");
+  textarea.value=text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+  alert("Copied to clipboard!");
+}
 
+// Camera Scanner
+function startCameraScanner(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    alert("Camera not supported. Switching to Upload mode.");
+    enableUploadMode();
+    return;
+  }
+  html5QrCode=new Html5Qrcode("reader");
+  html5QrCode.start({ facingMode: "environment" },{ fps: 10, qrbox: 250 },
+    (decodedText)=>{qrResult.value=decodedText;details.classList.add("active");})
+  .catch(err=>{console.error("Camera Scan Error:",err);alert("Failed to start camera.");});
+}
+function stopCamera(){if(html5QrCode){html5QrCode.stop().then(()=>{reader.innerHTML="";html5QrCode=null;});}}
+
+// Toggle Modes
+function enableCameraMode(){
+stopCamera();
+reader.style.display="block";form.style.display="none";
+cameraMode.classList.add("active");uploadMode.classList.remove("active");
+startCameraScanner();
+}
+function enableUploadMode(){
+stopCamera();
+reader.style.display="none";form.style.display="block";
+uploadMode.classList.add("active");cameraMode.classList.remove("active");
+}
+cameraMode.addEventListener("click",enableCameraMode);
+uploadMode.addEventListener("click",enableUploadMode);
 </script>
 </body>
 </html>
