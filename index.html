@@ -3,72 +3,321 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auth + QR Scanner</title>
+<title>QR Scanner</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://unpkg.com/html5-qrcode"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{background:#0B85FF;display:flex;justify-content:center;align-items:center;min-height:100vh;overflow-x:hidden;}
-.container,.scanner-wrapper,.modal{
-  display:none;background:#fff;border-radius:16px;padding:30px;width:360px;max-width:95%;
-  text-align:center;box-shadow:0 8px 25px rgba(0,0,0,.15);animation:fadeIn .6s ease forwards;position:relative;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
-h2{margin-bottom:20px;color:#0B85FF;}
-input{width:100%;padding:12px;margin:10px 0;border-radius:8px;border:1px solid #ccc;font-size:15px;outline:none;}
-button{width:100%;padding:12px;margin-top:15px;border:none;border-radius:8px;background:#0B85FF;color:#fff;
-  font-weight:600;font-size:15px;cursor:pointer;transition:.3s;}
-button:hover{background:#0868c1;transform:scale(1.03);}
-p{margin-top:15px;font-size:14px;color:#555;}
-a{color:#0B85FF;cursor:pointer;text-decoration:none;font-weight:500;}
-a:hover{text-decoration:underline;}
-.error{margin-top:10px;font-size:13px;color:#d93025;}
-.success{margin-top:10px;font-size:13px;color:#0b8a00;}
-#logout-btn{position:absolute;top:15px;right:15px;background:#0B85FF;color:#fff;width:auto;padding:7px 14px;
-  border-radius:6px;font-size:13px;cursor:pointer;transition:.3s;}
-#logout-btn:hover{background:#0868c1;}
+
+body {
+  background: #0B85FF;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding: 10px;
+}
+
+/* Containers */
+.container, .scanner-wrapper, .modal {
+  display: none;
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 8px 25px rgba(0,0,0,.15);
+  animation: fadeIn .6s ease forwards;
+  position: relative;
+}
+
+h2 {
+  margin-bottom: 15px;
+  color: #0B85FF;
+  font-size: 22px;
+}
+
+input {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #0B85FF;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+button:hover {
+  background: #0868c1;
+  transform: scale(1.03);
+}
+
+p {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+a {
+  color: #0B85FF;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.error {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #d93025;
+}
+
+.success {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #0b8a00;
+}
+
+/* Logout Button */
+#logout-btn {
+  display: inline-block;
+  margin-bottom: 15px;
+  float: right;
+  background: #0B85FF;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+#logout-btn:hover {
+  background: #0868c1;
+}
+
 /* Upload Box */
-.upload-box {width:100%;border:2px dashed #0B85FF;border-radius:14px;padding:25px;text-align:center;
-  transition:.3s;background:#f8fbff;cursor:pointer;}
-.upload-box:hover{background:#eef6ff;transform:scale(1.02);}
-.upload-area i{font-size:60px;color:#0B85FF;margin-bottom:10px;}
-.upload-area p{font-size:14px;color:#555;margin-bottom:10px;}
-.upload-area img{display:none;max-width:200px;border-radius:10px;margin-top:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);animation:fadeIn .5s ease forwards;}
-.upload-box.active img{display:block;}
+.upload-box {
+  width: 100%;
+  border: 2px dashed #0B85FF;
+  border-radius: 14px;
+  padding: 20px;
+  text-align: center;
+  background: #f8fbff;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.upload-box:hover {
+  background: #eef6ff;
+  transform: scale(1.02);
+}
+
+.upload-area i {
+  font-size: 50px;
+  color: #0B85FF;
+  margin-bottom: 10px;
+}
+
+.upload-area p {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;
+}
+
+.upload-area img {
+  display: none;
+  max-width: 100%;
+  border-radius: 10px;
+  margin-top: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  animation: fadeIn .5s ease forwards;
+}
+
+.upload-box.active img {
+  display: block;
+}
+
 /* Details */
-.details{margin-top:20px;display:flex;flex-direction:column;align-items:center;opacity:0;transition:.4s;width:100%;}
-.details.active{opacity:1;}
-.details textarea{width:100%;height:150px;resize:none;border-radius:8px;border:1px solid #0B85FF;
-  padding:12px;background:#0B85FF;color:#fff;font-size:14px;}
-.details .buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
-.buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
-/* Overlay + Modal */
-.overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:90;}
-.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
-  width:380px;max-width:95%;z-index:100;animation:popup .3s ease forwards;}
-.modal h2{color:#0B85FF;font-size:20px;margin-bottom:10px;}
-.modal input{margin-top:10px;}
-.modal button{margin-top:15px;}
-.close-modal{position:absolute;top:10px;right:15px;font-size:20px;color:#555;cursor:pointer;}
+.details {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  transition: .4s;
+  width: 100%;
+}
+
+.details.active {
+  opacity: 1;
+}
+
+.details textarea {
+  width: 100%;
+  height: 140px;
+  resize: none;
+  border-radius: 8px;
+  border: 1px solid #0B85FF;
+  padding: 10px;
+  background: #0B85FF;
+  color: #fff;
+  font-size: 14px;
+}
+
+.details .buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.buttons button {
+  width: 48%;
+  height: 42px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+
+/* Modal & Overlay */
+.overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(.95);
+  width: 95%;
+  max-width: 380px;
+  z-index: 100;
+  animation: popup .3s ease forwards;
+}
+
+.modal h2 {
+  color: #0B85FF;
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.modal input {
+  margin-top: 8px;
+}
+
+.modal button {
+  margin-top: 12px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  font-size: 20px;
+  color: #555;
+  cursor: pointer;
+}
+
 /* Stepper */
-.steps{margin-top:20px;text-align:left;}
-.step{display:flex;align-items:center;margin-bottom:12px;opacity:.4;transition:.4s;}
-.step span{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  background:#ddd;color:#555;font-weight:600;margin-right:10px;}
-.step.active{opacity:1;transform:translateX(5px);}
-.step.active span{background:#0B85FF;color:#fff;}
-.step p{margin:0;font-size:14px;color:#333;}
-/* Toggle Buttons */
-.toggle-buttons { display:flex; gap:10px; margin:15px 0; }
-.toggle-buttons button { flex:1; font-size:14px; background:#ddd; color:#333; }
-.toggle-buttons button.active { background:#0B85FF; color:#fff; }
+.steps {
+  margin-top: 15px;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  opacity: .4;
+  transition: .4s;
+}
+
+.step span {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ddd;
+  color: #555;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.step.active {
+  opacity: 1;
+  transform: translateX(5px);
+}
+
+.step.active span {
+  background: #0B85FF;
+  color: #fff;
+}
+
+.step p {
+  margin: 0;
+  font-size: 13px;
+  color: #333;
+}
+
 /* Animations */
-@keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
-@keyframes popup{from{opacity:0;transform:translate(-50%,-50%) scale(.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
+@keyframes fadeIn {
+  from { opacity:0; transform:translateY(15px); }
+  to { opacity:1; transform:translateY(0); }
+}
+
+@keyframes popup {
+  from { opacity:0; transform:translate(-50%, -50%) scale(.8); }
+  to { opacity:1; transform:translate(-50%, -50%) scale(1); }
+}
+
+/* Mobile Responsive */
+@media(max-width: 400px) {
+  h2 { font-size: 20px; }
+  input { padding: 10px; font-size: 14px; }
+  button { padding: 10px; font-size: 14px; }
+  .details textarea { height: 120px; font-size: 13px; }
+  .upload-area i { font-size: 45px; }
+  .step p { font-size: 12px; }
+}
 </style>
 </head>
 <body>
+
 <!-- Login -->
 <div class="container" id="login-container">
   <h2>Login</h2>
@@ -102,12 +351,8 @@ a:hover{text-decoration:underline;}
 <!-- QR Scanner -->
 <div class="scanner-wrapper" id="scanner-wrapper">
   <button id="logout-btn">Logout</button>
-  <div class="toggle-buttons">
-    <button id="camera-mode">Camera Scan</button>
-    <button id="upload-mode">Upload Scan</button>
-  </div>
-  <div id="reader" style="width:100%;max-width:320px;margin:auto;display:none;"></div>
-  <form id="upload-form" class="upload-box" style="display:none;">
+  
+  <form id="upload-form" class="upload-box">
     <div class="upload-area">
       <i class="fas fa-cloud-upload-alt"></i>
       <p>Click or Drop QR Code Image</p>
@@ -115,6 +360,7 @@ a:hover{text-decoration:underline;}
     </div>
     <input type="file" id="file-input" hidden>
   </form>
+  
   <div class="details" id="details">
     <textarea id="qr-result" disabled></textarea>
     <div class="buttons">
@@ -147,7 +393,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase Config
-const firebaseConfig={apiKey:"AIzaSyBF8WGFStX62SCFqhMzqcvIFI0LZTJfd30",authDomain:"social-media-420.firebaseapp.com",projectId:"social-media-420",storageBucket:"social-media-420.appspot.com",messagingSenderId:"137093270524",appId:"1:137093270524:web:2847379ede160b6c73c079"};
+const firebaseConfig={apiKey:"AIzaSyBF8WGFStX62SCFqhMzqcvIFI0LZTJfd30",authDomain:"social-media-420.firebaseapp.com",projectId:"social-media-420",storageBucket:"social-media-420.firebasestorage.app",messagingSenderId:"137093270524",appId:"1:137093270524:web:2847379ede160b6c73c079"};
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 setPersistence(auth,browserSessionPersistence);
@@ -182,16 +428,25 @@ const closeModal=document.querySelector(".close-modal");
 const resetEmail=document.getElementById("reset-email");
 const resetBtn=document.getElementById("reset-btn");
 const resetInstructions=document.getElementById("reset-instructions");
-const reader=document.getElementById("reader");
-const cameraMode=document.getElementById("camera-mode");
-const uploadMode=document.getElementById("upload-mode");
 
-let html5QrCode=null;
-
-// UI Switch
-function showLoginUI(){loginContainer.style.display="block";registerContainer.style.display="none";scannerWrapper.style.display="none";}
-function showRegisterUI(){loginContainer.style.display="none";registerContainer.style.display="block";scannerWrapper.style.display="none";}
-function showScannerUI(){loginContainer.style.display="none";registerContainer.style.display="none";scannerWrapper.style.display="block";}
+// Switch Screens
+function showLoginUI(){
+  loginError.innerText="";
+  registerError.innerText="";
+  loginContainer.style.display="block";
+  registerContainer.style.display="none";
+  scannerWrapper.style.display="none";
+}
+function showRegisterUI(){
+  loginContainer.style.display="none";
+  registerContainer.style.display="block";
+  scannerWrapper.style.display="none";
+}
+function showScannerUI(){
+  loginContainer.style.display="none";
+  registerContainer.style.display="none";
+  scannerWrapper.style.display="block";
+}
 showLoginUI();
 showRegister.addEventListener("click",showRegisterUI);
 showLogin.addEventListener("click",showLoginUI);
@@ -202,104 +457,97 @@ closeModal.addEventListener("click",()=>{overlay.style.display="none";forgotModa
 
 // Stepper
 function showSteps(id){
-const steps=document.querySelectorAll("#"+id+" .step");let i=0;
-steps.forEach(s=>s.classList.remove("active"));
-let interval=setInterval(()=>{if(i<steps.length){steps[i].classList.add("active");i++;}else clearInterval(interval);},1100);
+  const steps=document.querySelectorAll("#"+id+" .step");let i=0;
+  steps.forEach(s=>s.classList.remove("active"));
+  let interval=setInterval(()=>{if(i<steps.length){steps[i].classList.add("active");i++;}else clearInterval(interval);},1100);
 }
 
 // Auth
 loginBtn.addEventListener("click",()=>{
-signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
-.then(()=>{loginError.innerText="";showScannerUI();enableCameraMode();})
-.catch(err=>loginError.innerText=err.message);
-});
-registerBtn.addEventListener("click",()=>{
-createUserWithEmailAndPassword(auth,registerEmail.value,registerPassword.value)
-.then(userCred=>{
-sendEmailVerification(userCred.user);
-registerError.innerText="";registerInstructions.style.display="block";showSteps("verify-steps");
-})
-.catch(err=>registerError.innerText=err.message);
-});
-resetBtn.addEventListener("click",()=>{
-if(!resetEmail.value){alert("Enter your email.");return;}
-sendPasswordResetEmail(auth,resetEmail.value)
-.then(()=>{
-resetInstructions.style.display="block";showSteps("reset-steps");
-setTimeout(()=>{overlay.style.display="none";forgotModal.style.display="none";resetInstructions.style.display="none";},6000);
-})
-.catch(err=>alert(err.message));
-});
-logoutBtn.addEventListener("click",()=>{
-signOut(auth).then(()=>{showLoginUI();stopCamera();details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
+  signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
+  .then(userCred=>{
+    if(userCred.user.emailVerified){
+      loginError.innerText="";
+      showScannerUI();
+    } else {
+      loginError.innerText="Please verify your email before login.";
+      signOut(auth);
+    }
+  })
+  .catch(err=>loginError.innerText=err.message);
 });
 
-// QR Upload
+registerBtn.addEventListener("click",()=>{
+  createUserWithEmailAndPassword(auth,registerEmail.value,registerPassword.value)
+  .then(userCred=>{
+    sendEmailVerification(userCred.user);
+    registerInstructions.style.display="block";
+    showSteps("verify-steps");
+  })
+  .catch(err=>registerError.innerText=err.message);
+});
+
+resetBtn.addEventListener("click",()=>{
+  if(!resetEmail.value){alert("Enter your email.");return;}
+  sendPasswordResetEmail(auth,resetEmail.value)
+  .then(()=>{
+    resetInstructions.style.display="block";showSteps("reset-steps");
+    setTimeout(()=>{overlay.style.display="none";forgotModal.style.display="none";resetInstructions.style.display="none";},6000);
+  })
+  .catch(err=>alert(err.message));
+});
+
+logoutBtn.addEventListener("click",()=>{
+  signOut(auth).then(()=>{
+    showLoginUI();
+    details.classList.remove("active");
+    form.classList.remove("active");
+    qrImage.src="";
+    qrResult.value="";
+  });
+});
+
+// QR Scan
 function fetchRequest(file,formData){
-fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
-.then(res=>res.json())
-.then(result=>{
-const data=result[0]?.symbol[0]?.data;
-if(!data){alert("QR Code not detected.");return;}
-qrResult.value=data;
-form.classList.add("active");
-details.classList.add("active");
-}).catch(err=>{console.error("QR Upload Error:",err);alert("Failed to read QR code.");});
+  fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
+  .then(res=>res.json())
+  .then(result=>{
+    const data=result[0]?.symbol[0]?.data;
+    if(!data)return;
+    qrResult.value=data;
+    form.classList.add("active");
+    details.classList.add("active");
+  }).catch(()=>{});
 }
+
 form.addEventListener("click",()=>fileInput.click());
 fileInput.addEventListener("change",e=>{
-const file=e.target.files[0];if(!file)return;
-const formData=new FormData();formData.append('file',file);
-qrImage.src=URL.createObjectURL(file);
-fetchRequest(file,formData);
+  const file=e.target.files[0];if(!file)return;
+  const formData=new FormData();formData.append('file',file);
+  qrImage.src=URL.createObjectURL(file);
+  fetchRequest(file,formData);
 });
+
+// Drag & Drop Support
+form.addEventListener("dragover",e=>{
+  e.preventDefault();
+  form.classList.add("active");
+});
+form.addEventListener("dragleave",()=>form.classList.remove("active"));
+form.addEventListener("drop",e=>{
+  e.preventDefault();
+  form.classList.remove("active");
+  const file=e.dataTransfer.files[0];
+  if(file){
+    const formData=new FormData();
+    formData.append("file",file);
+    qrImage.src=URL.createObjectURL(file);
+    fetchRequest(file,formData);
+  }
+});
+
 closeBtn.addEventListener("click",()=>{details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
-copyBtn.addEventListener("click",()=>{
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(qrResult.value).then(()=>alert("Copied to clipboard!"))
-    .catch(()=>fallbackCopy(qrResult.value));
-  } else {
-    fallbackCopy(qrResult.value);
-  }
-});
-function fallbackCopy(text){
-  let textarea=document.createElement("textarea");
-  textarea.value=text;
-  document.body.appendChild(textarea);
-  textarea.select();
-  document.execCommand("copy");
-  document.body.removeChild(textarea);
-  alert("Copied to clipboard!");
-}
-
-// Camera Scanner
-function startCameraScanner(){
-  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-    alert("Camera not supported. Switching to Upload mode.");
-    enableUploadMode();
-    return;
-  }
-  html5QrCode=new Html5Qrcode("reader");
-  html5QrCode.start({ facingMode: "environment" },{ fps: 10, qrbox: 250 },
-    (decodedText)=>{qrResult.value=decodedText;details.classList.add("active");})
-  .catch(err=>{console.error("Camera Scan Error:",err);alert("Failed to start camera.");});
-}
-function stopCamera(){if(html5QrCode){html5QrCode.stop().then(()=>{reader.innerHTML="";html5QrCode=null;});}}
-
-// Toggle Modes
-function enableCameraMode(){
-stopCamera();
-reader.style.display="block";form.style.display="none";
-cameraMode.classList.add("active");uploadMode.classList.remove("active");
-startCameraScanner();
-}
-function enableUploadMode(){
-stopCamera();
-reader.style.display="none";form.style.display="block";
-uploadMode.classList.add("active");cameraMode.classList.remove("active");
-}
-cameraMode.addEventListener("click",enableCameraMode);
-uploadMode.addEventListener("click",enableUploadMode);
+copyBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
 </script>
 </body>
 </html>
