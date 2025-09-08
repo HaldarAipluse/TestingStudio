@@ -133,6 +133,19 @@ a:hover{text-decoration:underline;}
 .step.active span{background:#0B85FF;color:#fff;}
 .step p{margin:0;font-size:14px;color:#fff;}
 
+/* Settings Icon */
+.settings-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 22px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+.settings-icon:hover { transform: rotate(45deg); }
+.delete-btn { background: rgba(255, 59, 48, 0.7); }
+.delete-btn:hover { background: rgba(255, 59, 48, 0.9); }
+
 /* Animations */
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 @keyframes popup{from{opacity:0;transform:translate(-50%,-50%) scale(.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
@@ -168,6 +181,7 @@ a:hover{text-decoration:underline;}
 
 <!-- QR Scanner -->
 <div class="scanner-wrapper" id="scanner-wrapper">
+  <i class="fas fa-cog settings-icon" id="settings-icon"></i>
   <form id="upload-form" class="upload-box">
     <div class="upload-area">
       <i class="fas fa-cloud-upload-alt"></i>
@@ -188,7 +202,7 @@ a:hover{text-decoration:underline;}
 <!-- Forgot Password Modal -->
 <div class="overlay" id="forgot-overlay"></div>
 <div class="modal" id="forgot-modal">
-  <span class="close-modal" id="close-forgot">&times;</span>
+  <span class="close-modal" data-target="forgot">&times;</span>
   <h2>Reset Password</h2>
   <p style="font-size:13px;color:#fff;">Enter your email and we’ll send you a reset link.</p>
   <input type="email" id="reset-email" placeholder="Your email">
@@ -198,7 +212,7 @@ a:hover{text-decoration:underline;}
 <!-- Register Verification Modal -->
 <div class="overlay" id="verify-overlay"></div>
 <div class="modal" id="verify-modal">
-  <span class="close-modal" id="close-verify">&times;</span>
+  <span class="close-modal" data-target="verify">&times;</span>
   <h2>Email Verification</h2>
   <div class="steps" id="verify-steps">
     <div class="step"><span>1</span><p>Verification email sent</p></div>
@@ -211,7 +225,7 @@ a:hover{text-decoration:underline;}
 <!-- Reset Instructions Modal -->
 <div class="overlay" id="reset-overlay"></div>
 <div class="modal" id="reset-modal">
-  <span class="close-modal" id="close-reset">&times;</span>
+  <span class="close-modal" data-target="reset">&times;</span>
   <h2>Password Reset</h2>
   <div class="steps" id="reset-steps">
     <div class="step"><span>1</span><p>Reset email sent</p></div>
@@ -221,12 +235,79 @@ a:hover{text-decoration:underline;}
   </div>
 </div>
 
+<!-- Settings Modal -->
+<div class="overlay" id="settings-overlay"></div>
+<div class="modal" id="settings-modal">
+    <span class="close-modal" data-target="settings">&times;</span>
+    <h2>Settings</h2>
+    <button id="show-about-btn">About</button>
+    <button id="show-change-password-btn">Change Password</button>
+    <button id="show-delete-account-btn" class="delete-btn">Delete Account</button>
+    <button id="logout-btn" style="margin-top: 25px;">Logout</button>
+</div>
+
+<!-- Change Password Modal -->
+<div class="overlay" id="change-password-overlay"></div>
+<div class="modal" id="change-password-modal">
+    <span class="close-modal" data-target="change-password">&times;</span>
+    <h2>Change Password</h2>
+    <input type="password" id="current-password" placeholder="Current Password">
+    <input type="password" id="new-password" placeholder="New Password">
+    <button id="change-password-btn">Update Password</button>
+    <div class="error" id="change-password-error"></div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="overlay" id="delete-account-overlay"></div>
+<div class="modal" id="delete-account-modal">
+    <span class="close-modal" data-target="delete-account">&times;</span>
+    <h2>Delete Account</h2>
+    <p style="font-size: 13px;">This action is irreversible. Please enter your password to confirm.</p>
+    <input type="password" id="delete-confirm-password" placeholder="Enter your password">
+    <button id="delete-account-btn" class="delete-btn">Confirm Deletion</button>
+    <div class="error" id="delete-account-error"></div>
+</div>
+
+<!-- About Modal -->
+<div class="overlay" id="about-overlay"></div>
+<div class="modal" id="about-modal">
+    <span class="close-modal" data-target="about">&times;</span>
+    <h2>About This App</h2>
+    <p style="font-size: 14px; text-align: left; line-height: 1.6;">
+        <strong>QR Code Scanner & Authenticator</strong><br>
+        Version: 1.2.0<br><br>
+        This application allows you to easily scan QR codes by uploading an image. It is a single-page application built with modern web technologies.<br><br>
+        <strong>Features:</strong>
+        <ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;">
+            <li>Secure User Authentication via Firebase.</li>
+            <li>QR Code decoding using qrserver.com API.</li>
+            <li>Modern "Glassmorphism" UI.</li>
+            <li>Account management features like password change and deletion.</li>
+        </ul>
+    </p>
+</div>
+
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence, EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase Config
-const firebaseConfig={apiKey:"AIzaSyBF8WGFStX62SCFqhMzqcvIFI0LZTJfd30",authDomain:"social-media-420.firebaseapp.com",projectId:"social-media-420",storageBucket:"social-media-420.firebasestorage.app",messagingSenderId:"137093270524",appId:"1:137093270524:web:2847379ede160b6c73c079"};
+
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyD1EfLfww52UaoDLptSb4jm9jW8H9Y0k5g",
+  authDomain: "qr-code-120.firebaseapp.com",
+  databaseURL: "https://qr-code-120-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "qr-code-120",
+  storageBucket: "qr-code-120.firebasestorage.app",
+  messagingSenderId: "459830379508",
+  appId: "1:459830379508:web:04a92b9bd31ba1cade2fa1",
+  measurementId: "G-QB7NXGDG1N"
+};
+
+
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 setPersistence(auth,browserSessionPersistence);
@@ -254,18 +335,35 @@ const details=document.getElementById("details");
 const closeBtn=document.querySelector(".close");
 const copyBtn=document.querySelector(".copy");
 
-// Modals
-const forgotOverlay=document.getElementById("forgot-overlay");
-const forgotModal=document.getElementById("forgot-modal");
-const closeForgot=document.getElementById("close-forgot");
-const resetEmail=document.getElementById("reset-email");
-const resetBtn=document.getElementById("reset-btn");
-const verifyOverlay=document.getElementById("verify-overlay");
-const verifyModal=document.getElementById("verify-modal");
-const closeVerify=document.getElementById("close-verify");
-const resetOverlay=document.getElementById("reset-overlay");
-const resetModal=document.getElementById("reset-modal");
-const closeReset=document.getElementById("close-reset");
+// Modals & Overlays
+const modals = {
+    forgot: { overlay: document.getElementById("forgot-overlay"), modal: document.getElementById("forgot-modal") },
+    verify: { overlay: document.getElementById("verify-overlay"), modal: document.getElementById("verify-modal") },
+    reset: { overlay: document.getElementById("reset-overlay"), modal: document.getElementById("reset-modal") },
+    settings: { overlay: document.getElementById("settings-overlay"), modal: document.getElementById("settings-modal") },
+    "change-password": { overlay: document.getElementById("change-password-overlay"), modal: document.getElementById("change-password-modal") },
+    "delete-account": { overlay: document.getElementById("delete-account-overlay"), modal: document.getElementById("delete-account-modal") },
+    about: { overlay: document.getElementById("about-overlay"), modal: document.getElementById("about-modal") }
+};
+
+// Settings
+const settingsIcon = document.getElementById("settings-icon");
+const logoutBtn = document.getElementById("logout-btn");
+const showAboutBtn = document.getElementById("show-about-btn");
+const showChangePasswordBtn = document.getElementById("show-change-password-btn");
+const showDeleteAccountBtn = document.getElementById("show-delete-account-btn");
+
+// Change Password
+const changePasswordBtn = document.getElementById("change-password-btn");
+const currentPasswordInput = document.getElementById("current-password");
+const newPasswordInput = document.getElementById("new-password");
+const changePasswordError = document.getElementById("change-password-error");
+
+// Delete Account
+const deleteAccountBtn = document.getElementById("delete-account-btn");
+const deleteConfirmPasswordInput = document.getElementById("delete-confirm-password");
+const deleteAccountError = document.getElementById("delete-account-error");
+
 
 // Switch Screens
 function showLoginUI(){loginContainer.style.display="block";registerContainer.style.display="none";scannerWrapper.style.display="none";}
@@ -275,11 +373,40 @@ showLoginUI();
 showRegister.addEventListener("click",showRegisterUI);
 showLogin.addEventListener("click",showLoginUI);
 
-// Modal open/close
-showForgot.addEventListener("click",()=>{forgotOverlay.style.display="block";forgotModal.style.display="block";});
-closeForgot.addEventListener("click",()=>{forgotOverlay.style.display="none";forgotModal.style.display="none";});
-closeVerify.addEventListener("click",()=>{verifyOverlay.style.display="none";verifyModal.style.display="none";});
-closeReset.addEventListener("click",()=>{resetOverlay.style.display="none";resetModal.style.display="none";});
+// Modal Management
+function openModal(name) {
+    if (modals[name]) {
+        modals[name].overlay.style.display = "block";
+        modals[name].modal.style.display = "block";
+    }
+}
+
+function closeModal(name) {
+    if (modals[name]) {
+        modals[name].overlay.style.display = "none";
+        modals[name].modal.style.display = "none";
+    }
+}
+
+document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.target));
+});
+
+showForgot.addEventListener("click", () => openModal('forgot'));
+settingsIcon.addEventListener("click", () => openModal('settings'));
+
+showAboutBtn.addEventListener("click", () => {
+    closeModal('settings');
+    openModal('about');
+});
+showChangePasswordBtn.addEventListener("click", () => {
+    closeModal('settings');
+    openModal('change-password');
+});
+showDeleteAccountBtn.addEventListener("click", () => {
+    closeModal('settings');
+    openModal('delete-account');
+});
 
 // Stepper animation
 function showSteps(id){
@@ -292,54 +419,128 @@ function showSteps(id){
   },1100);
 }
 
-// Auth
+// --- Auth ---
 loginBtn.addEventListener("click",()=>{
   signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
     .then(()=>{loginError.innerText="";showScannerUI();})
     .catch(err=>loginError.innerText=err.message);
 });
+
 registerBtn.addEventListener("click",()=>{
   createUserWithEmailAndPassword(auth,registerEmail.value,registerPassword.value)
     .then(userCred=>{
       sendEmailVerification(userCred.user);
-      verifyOverlay.style.display="block";
-      verifyModal.style.display="block";
+      openModal('verify');
       showSteps("verify-steps");
     })
     .catch(err=>registerError.innerText=err.message);
 });
-resetBtn.addEventListener("click",()=>{
-  if(!resetEmail.value){alert("Enter your email.");return;}
-  sendPasswordResetEmail(auth,resetEmail.value)
+
+document.getElementById("reset-btn").addEventListener("click",()=>{
+  const resetEmail = document.getElementById("reset-email").value;
+  if(!resetEmail){alert("Enter your email.");return;}
+  sendPasswordResetEmail(auth,resetEmail)
     .then(()=>{
-      forgotOverlay.style.display="none";forgotModal.style.display="none";
-      resetOverlay.style.display="block";resetModal.style.display="block";
+      closeModal('forgot');
+      openModal('reset');
       showSteps("reset-steps");
-      setTimeout(()=>{resetOverlay.style.display="none";resetModal.style.display="none";},6000);
+      setTimeout(()=>closeModal('reset'), 6000);
     })
     .catch(err=>alert(err.message));
 });
 
-// QR Scan
+logoutBtn.addEventListener("click", () => {
+    signOut(auth).then(() => {
+        // Close all modals and show login screen
+        Object.keys(modals).forEach(closeModal);
+        showLoginUI();
+    }).catch(err => alert(err.message));
+});
+
+// --- Account Management ---
+const getCredentials = (password) => {
+    const user = auth.currentUser;
+    if (user) {
+        return EmailAuthProvider.credential(user.email, password);
+    }
+    return null;
+}
+
+changePasswordBtn.addEventListener("click", () => {
+    const currentPassword = currentPasswordInput.value;
+    const newPassword = newPasswordInput.value;
+    const user = auth.currentUser;
+    changePasswordError.innerText = "";
+
+    if (!currentPassword || !newPassword) {
+        changePasswordError.innerText = "Please fill in all fields.";
+        return;
+    }
+
+    const credential = getCredentials(currentPassword);
+    if (!credential) return;
+
+    reauthenticateWithCredential(user, credential).then(() => {
+        updatePassword(user, newPassword).then(() => {
+            alert("Password updated successfully. Please log in again.");
+            signOut(auth);
+            Object.keys(modals).forEach(closeModal);
+            showLoginUI();
+        }).catch(err => changePasswordError.innerText = err.message);
+    }).catch(err => changePasswordError.innerText = "Incorrect current password.");
+});
+
+deleteAccountBtn.addEventListener("click", () => {
+    const password = deleteConfirmPasswordInput.value;
+    const user = auth.currentUser;
+    deleteAccountError.innerText = "";
+
+    if (!password) {
+        deleteAccountError.innerText = "Password is required to delete your account.";
+        return;
+    }
+
+    const credential = getCredentials(password);
+    if (!credential) return;
+
+    reauthenticateWithCredential(user, credential).then(() => {
+        deleteUser(user).then(() => {
+            alert("Account deleted successfully.");
+            Object.keys(modals).forEach(closeModal);
+            showLoginUI();
+        }).catch(err => deleteAccountError.innerText = err.message);
+    }).catch(err => deleteAccountError.innerText = "Incorrect password.");
+});
+
+// --- QR Scan ---
 function fetchRequest(file,formData){
   fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
     .then(res=>res.json())
     .then(result=>{
       const data=result[0]?.symbol[0]?.data;
-      if(!data)return;
+      if(!data){
+          alert("Could not decode QR Code from this image.");
+          return;
+      };
       qrResult.value=data;
       form.classList.add("active");
       details.classList.add("active");
-    }).catch(()=>{});
+    }).catch(()=>{
+        alert("An error occurred while scanning.");
+    });
 }
+
 form.addEventListener("click",()=>fileInput.click());
+
 fileInput.addEventListener("change",e=>{
   const file=e.target.files[0];if(!file)return;
   const formData=new FormData();formData.append('file',file);
   qrImage.src=URL.createObjectURL(file);
   fetchRequest(file,formData);
 });
+
 closeBtn.addEventListener("click",()=>{details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
+
 copyBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
 </script>
 </body>
