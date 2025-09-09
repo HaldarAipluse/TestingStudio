@@ -117,8 +117,8 @@ button.loading span { visibility: hidden; }
 }
 .qr-code-box.show { display: block; animation: fadeIn 0.5s ease; }
 .qr-code-box img { max-width: 100%; border-radius: 10px; background: white; padding: 8px; }
-.buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
-.buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
+.buttons{display:flex;justify-content:center;gap:10px;width:100%;margin-top:15px;}
+.buttons button{width:auto;flex-grow:1;height:45px;border-radius:8px;font-size:14px;font-weight:600;margin-top:0;}
 
 
 /* Live Scanner */
@@ -315,6 +315,7 @@ button.loading span { visibility: hidden; }
         <textarea id="live-qr-result" readonly></textarea>
         <div class="buttons">
             <button id="new-scan-btn"><span>New Scan</span></button>
+            <button id="open-live-btn" style="display: none;"><span>Open</span></button>
             <button id="copy-live-btn"><span>Copy</span></button>
         </div>
     </div>
@@ -339,6 +340,7 @@ button.loading span { visibility: hidden; }
     <textarea id="qr-result" readonly></textarea>
     <div class="buttons">
       <button id="clear-upload-btn"><span>Clear</span></button>
+      <button id="open-upload-btn" style="display: none;"><span>Open</span></button>
       <button id="copy-upload-btn"><span>Copy</span></button>
     </div>
   </div>
@@ -362,7 +364,7 @@ button.loading span { visibility: hidden; }
 <div class="overlay" id="settings-overlay"></div><div class="modal" id="settings-modal"><span class="close-modal" data-target="settings">&times;</span><h2>Settings</h2><button id="show-about-btn"><span>About</span></button><button id="show-change-password-btn"><span>Change Password</span></button><button id="show-delete-account-btn" class="delete-btn"><span>Delete Account</span></button><button id="logout-btn" style="margin-top: 25px;"><span>Logout</span></button></div>
 <div class="overlay" id="change-password-overlay"></div><div class="modal" id="change-password-modal"><span class="close-modal" data-target="change-password">&times;</span><h2>Change Password</h2><input type="password" id="current-password" placeholder="Current Password"><input type="password" id="new-password" placeholder="New Password"><button id="change-password-btn"><span>Update Password</span><div class="spinner"></div></button><div class="error" id="change-password-error"></div></div>
 <div class="overlay" id="delete-account-overlay"></div><div class="modal" id="delete-account-modal"><span class="close-modal" data-target="delete-account">&times;</span><h2>Delete Account</h2><p style="font-size: 13px;">This action is irreversible. Please enter your password to confirm.</p><input type="password" id="delete-confirm-password" placeholder="Enter your password"><button id="delete-account-btn" class="delete-btn"><span>Confirm Deletion</span><div class="spinner"></div></button><div class="error" id="delete-account-error"></div></div>
-<div class="overlay" id="about-overlay"></div><div class="modal" id="about-modal"><span class="close-modal" data-target="about">&times;</span><h2>About This App</h2><p style="font-size: 14px; text-align: left; line-height: 1.6;"><strong>QR Code Suite</strong><br>Version: 1.8.0<br><br>This application allows you to easily generate, live scan, and decode QR codes from images. It is a single-page application built with modern web technologies.<br><br><strong>Features:</strong><ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;"><li>Secure User Authentication via Firebase.</li><li>Animated actions for login, generation, and scanning.</li><li>Live camera QR code scanning with success animation.</li><li>QR Code decoding from image upload.</li><li>Modern "Glassmorphism" UI.</li><li>Account management features.</li></ul></p></div>
+<div class="overlay" id="about-overlay"></div><div class="modal" id="about-modal"><span class="close-modal" data-target="about">&times;</span><h2>About This App</h2><p style="font-size: 14px; text-align: left; line-height: 1.6;"><strong>QR Code Suite</strong><br>Version: 1.9.0<br><br>This application allows you to easily generate, live scan, and decode QR codes from images. It is a single-page application built with modern web technologies.<br><br><strong>Features:</strong><ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;"><li>Secure User Authentication via Firebase.</li><li>Animated actions for login, generation, and scanning.</li><li>Live camera QR code scanning with success animation.</li><li>QR Code decoding from image upload.</li><li>Modern "Glassmorphism" UI.</li><li>Account management features.</li></ul></p></div>
 
 
 <script type="module">
@@ -425,6 +427,7 @@ const liveResults = document.getElementById("live-results");
 const liveQrResult = document.getElementById("live-qr-result");
 const newScanBtn = document.getElementById("new-scan-btn");
 const copyLiveBtn = document.getElementById("copy-live-btn");
+const openLiveBtn = document.getElementById("open-live-btn");
 const tickAnimation = document.getElementById("tick-animation");
 const scanSuccessOverlay = document.getElementById("scan-success-overlay");
 let stream;
@@ -438,6 +441,7 @@ const qrResult=document.getElementById("qr-result");
 const details=document.getElementById("details");
 const clearUploadBtn = document.getElementById("clear-upload-btn");
 const copyUploadBtn = document.getElementById("copy-upload-btn");
+const openUploadBtn = document.getElementById("open-upload-btn");
 
 // Modals
 const modals = {
@@ -468,6 +472,26 @@ const deleteAccountError = document.getElementById("delete-account-error");
 function setButtonLoading(button, isLoading) {
     button.classList.toggle('loading', isLoading);
     button.disabled = isLoading;
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        // A common case is a URL without a protocol like "google.com"
+        // Try prepending a protocol to see if it becomes a valid URL
+        try {
+            new URL('https://' + string);
+            // This is a special case where we consider it valid for opening
+            if (string.includes('.')) {
+                return true;
+            }
+        } catch (e) {
+            return false;
+        }
+        return false;
+    }
 }
 
 
@@ -641,6 +665,7 @@ downloadQrBtn.addEventListener("click", async () => {
 // --- Live QR Scanner ---
 function startLiveScanner() {
     liveResults.style.display = 'none';
+    openLiveBtn.style.display = 'none';
     liveScanStatus.style.display = 'block';
     tickAnimation.style.display = 'none';
     scanSuccessOverlay.style.display = 'none';
@@ -689,6 +714,11 @@ function showScanSuccess(data) {
         liveScanStatus.style.display = 'none';
         liveResults.style.display = 'block';
         liveQrResult.value = data;
+        if (isValidUrl(data)) {
+            openLiveBtn.style.display = 'inline-block';
+        } else {
+            openLiveBtn.style.display = 'none';
+        }
     }, 1500);
 }
 
@@ -706,6 +736,11 @@ function fetchRequest(file,formData){
       qrResult.value=data;
       form.classList.add("active");
       details.classList.add("active");
+      if (isValidUrl(data)) {
+        openUploadBtn.style.display = 'inline-block';
+      } else {
+        openUploadBtn.style.display = 'none';
+      }
     })
     .catch(()=>{ alert("An error occurred while scanning."); })
     .finally(() => form.classList.remove('loading'));
@@ -724,8 +759,22 @@ clearUploadBtn.addEventListener("click",()=>{
     qrImage.src="#";
     qrResult.value="";
     fileInput.value = ''; 
+    openUploadBtn.style.display = 'none';
 });
 copyUploadBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
+
+// --- "Open" Button Logic ---
+const handleOpenUrl = (url) => {
+    if (!url) return;
+    let fullUrl = url;
+    if (!/^https?:\/\//i.test(url)) {
+        fullUrl = 'https://' + url;
+    }
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+};
+
+openLiveBtn.addEventListener("click", () => handleOpenUrl(liveQrResult.value));
+openUploadBtn.addEventListener("click", () => handleOpenUrl(qrResult.value));
 
 </script>
 </body>
