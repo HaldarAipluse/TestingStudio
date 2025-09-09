@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Scanner</title>
+<title>QR Suite</title>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
@@ -19,7 +20,7 @@ body{
 }
 
 /* Glassmorphism containers */
-.container,.scanner-wrapper,.modal{
+.container,.scanner-wrapper,.generator-wrapper,.live-scanner-wrapper,.modal{
   display:none;
   background:rgba(255,255,255,0.15);
   border-radius:16px;
@@ -45,6 +46,7 @@ input,textarea{
   color:#fff;
   font-size:15px;
   outline:none;
+  resize: none;
 }
 input::placeholder,textarea::placeholder{color:rgba(255,255,255,0.7);}
 button{
@@ -69,7 +71,49 @@ a:hover{text-decoration:underline;}
 .error{margin-top:10px;font-size:13px;color:#ffbaba;}
 .success{margin-top:10px;font-size:13px;color:#b2ffb2;}
 
-/* Upload Box */
+/* Generator */
+.generator-wrapper textarea { height: 120px; }
+.qr-code-box {
+    display: none;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+.qr-code-box.show {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+.qr-code-box img {
+    max-width: 100%;
+    border-radius: 10px;
+    background: white;
+    padding: 8px;
+}
+.buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
+.buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
+
+
+/* Live Scanner */
+#video-container {
+    position: relative;
+    width: 100%;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #000;
+}
+#video { width: 100%; height: auto; display: block; }
+#scan-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+}
+.live-results { margin-top: 15px; }
+.live-results textarea { height: 100px; }
+
+
+/* Upload Scanner */
 .upload-box{
   width:100%;
   border:2px dashed rgba(255,255,255,0.4);
@@ -93,13 +137,10 @@ a:hover{text-decoration:underline;}
   animation:fadeIn .5s ease forwards;
 }
 .upload-box.active img{display:block;}
-
-/* Details */
 .details{margin-top:20px;display:flex;flex-direction:column;align-items:center;opacity:0;transition:.4s;width:100%;}
 .details.active{opacity:1;}
-.details textarea{height:150px;resize:none;}
-.details .buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
-.buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
+.details textarea{height:150px;}
+
 
 /* Overlay + Modal */
 .overlay{
@@ -150,7 +191,7 @@ a:hover{text-decoration:underline;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 @keyframes popup{from{opacity:0;transform:translate(-50%,-50%) scale(.8);}to{opacity:1;transform:translate(-50%,-50%) scale(1);}}
 @media(max-width:450px){
-  .scanner-wrapper{width:95%;}
+  .scanner-wrapper, .generator-wrapper, .live-scanner-wrapper {width:95%;}
   .upload-area img{max-width:150px;}
   .details textarea{height:120px;}
 }
@@ -179,9 +220,47 @@ a:hover{text-decoration:underline;}
   <p>Already have an account? <a id="show-login">Login</a></p>
 </div>
 
-<!-- QR Scanner -->
+
+<!-- 1. QR Generator -->
+<div class="generator-wrapper" id="generator-wrapper">
+    <i class="fas fa-cog settings-icon" id="settings-icon-gen"></i>
+    <h2>QR Code Generator</h2>
+    <textarea id="qr-text-input" placeholder="Enter text or URL to encode..."></textarea>
+    <button id="generate-qr-btn">Generate QR Code</button>
+    <div class="qr-code-box" id="qr-code-box">
+        <img id="generated-qr-image" src="" alt="Generated QR Code">
+        <div class="buttons">
+            <button id="clear-qr-btn">Clear</button>
+            <button id="download-qr-btn">Download</button>
+        </div>
+    </div>
+    <p>Switch to: <a id="show-live-scanner">Live Scan</a> | <a id="show-scanner">Upload Scan</a></p>
+</div>
+
+<!-- 2. Live QR Scanner -->
+<div class="live-scanner-wrapper" id="live-scanner-wrapper">
+    <i class="fas fa-cog settings-icon" id="settings-icon-live"></i>
+    <h2>Live Scanner</h2>
+    <div id="video-container">
+        <video id="video" playsinline></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+    </div>
+    <div id="live-scan-status">Searching for QR code...</div>
+    <div class="live-results" id="live-results" style="display:none;">
+        <textarea id="live-qr-result" readonly></textarea>
+        <div class="buttons">
+            <button id="new-scan-btn">New Scan</button>
+            <button id="copy-live-btn">Copy</button>
+        </div>
+    </div>
+     <p>Switch to: <a id="show-generator">Generate</a> | <a id="show-scanner-2">Upload Scan</a></p>
+</div>
+
+
+<!-- 3. QR Scanner (Upload) -->
 <div class="scanner-wrapper" id="scanner-wrapper">
-  <i class="fas fa-cog settings-icon" id="settings-icon"></i>
+  <i class="fas fa-cog settings-icon" id="settings-icon-upload"></i>
+  <h2>Upload QR Code</h2>
   <form id="upload-form" class="upload-box">
     <div class="upload-area">
       <i class="fas fa-cloud-upload-alt"></i>
@@ -191,13 +270,15 @@ a:hover{text-decoration:underline;}
     <input type="file" id="file-input" hidden>
   </form>
   <div class="details" id="details">
-    <textarea id="qr-result" disabled></textarea>
+    <textarea id="qr-result" readonly></textarea>
     <div class="buttons">
-      <button class="close">Clear</button>
-      <button class="copy">Copy</button>
+      <button id="clear-upload-btn">Clear</button>
+      <button id="copy-upload-btn">Copy</button>
     </div>
   </div>
+  <p>Switch to: <a id="show-generator-2">Generate</a> | <a id="show-live-scanner-2">Live Scan</a></p>
 </div>
+
 
 <!-- Forgot Password Modal -->
 <div class="overlay" id="forgot-overlay"></div>
@@ -274,15 +355,17 @@ a:hover{text-decoration:underline;}
     <span class="close-modal" data-target="about">&times;</span>
     <h2>About This App</h2>
     <p style="font-size: 14px; text-align: left; line-height: 1.6;">
-        <strong>QR Code Scanner & Authenticator</strong><br>
-        Version: 1.2.0<br><br>
-        This application allows you to easily scan QR codes by uploading an image. It is a single-page application built with modern web technologies.<br><br>
+        <strong>QR Code Suite</strong><br>
+        Version: 1.5.0<br><br>
+        This application allows you to easily generate, live scan, and decode QR codes from images. It is a single-page application built with modern web technologies.<br><br>
         <strong>Features:</strong>
         <ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;">
             <li>Secure User Authentication via Firebase.</li>
-            <li>QR Code decoding using qrserver.com API.</li>
+            <li>QR Code generation.</li>
+            <li>Live camera QR code scanning.</li>
+            <li>QR Code decoding from image upload.</li>
             <li>Modern "Glassmorphism" UI.</li>
-            <li>Account management features like password change and deletion.</li>
+            <li>Account management features.</li>
         </ul>
     </p>
 </div>
@@ -293,9 +376,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence, EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase Config
-
-
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: "AIzaSyD1EfLfww52UaoDLptSb4jm9jW8H9Y0k5g",
   authDomain: "qr-code-120.firebaseapp.com",
@@ -307,15 +387,17 @@ const firebaseConfig = {
   measurementId: "G-QB7NXGDG1N"
 };
 
-
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 setPersistence(auth,browserSessionPersistence);
 
-// Elements
+// --- Elements ---
 const loginContainer=document.getElementById("login-container");
 const registerContainer=document.getElementById("register-container");
 const scannerWrapper=document.getElementById("scanner-wrapper");
+const generatorWrapper=document.getElementById("generator-wrapper");
+const liveScannerWrapper = document.getElementById("live-scanner-wrapper");
+
 const loginEmail=document.getElementById("login-email");
 const loginPassword=document.getElementById("login-password");
 const loginBtn=document.getElementById("login-btn");
@@ -324,16 +406,43 @@ const registerEmail=document.getElementById("register-email");
 const registerPassword=document.getElementById("register-password");
 const registerBtn=document.getElementById("register-btn");
 const registerError=document.getElementById("register-error");
+
+// Navigation Links
 const showRegister=document.getElementById("show-register");
 const showLogin=document.getElementById("show-login");
 const showForgot=document.getElementById("show-forgot");
+
+const navShowGenerator = [document.getElementById("show-generator"), document.getElementById("show-generator-2")];
+const navShowScanner = [document.getElementById("show-scanner"), document.getElementById("show-scanner-2")];
+const navShowLiveScanner = [document.getElementById("show-live-scanner"), document.getElementById("show-live-scanner-2")];
+
+// Generator Elements
+const qrTextInput = document.getElementById("qr-text-input");
+const generateQrBtn = document.getElementById("generate-qr-btn");
+const qrCodeBox = document.getElementById("qr-code-box");
+const generatedQrImage = document.getElementById("generated-qr-image");
+const clearQrBtn = document.getElementById("clear-qr-btn");
+const downloadQrBtn = document.getElementById("download-qr-btn");
+
+// Live Scanner Elements
+const video = document.getElementById("video");
+const canvas = document.getElementById("canvas");
+const liveScanStatus = document.getElementById("live-scan-status");
+const liveResults = document.getElementById("live-results");
+const liveQrResult = document.getElementById("live-qr-result");
+const newScanBtn = document.getElementById("new-scan-btn");
+const copyLiveBtn = document.getElementById("copy-live-btn");
+let stream;
+let scanInterval;
+
+// Upload Scanner Elements
 const form=document.getElementById("upload-form");
 const fileInput=document.getElementById("file-input");
 const qrImage=document.getElementById("qr-image");
 const qrResult=document.getElementById("qr-result");
 const details=document.getElementById("details");
-const closeBtn=document.querySelector(".close");
-const copyBtn=document.querySelector(".copy");
+const clearUploadBtn = document.getElementById("clear-upload-btn");
+const copyUploadBtn = document.getElementById("copy-upload-btn");
 
 // Modals & Overlays
 const modals = {
@@ -347,7 +456,7 @@ const modals = {
 };
 
 // Settings
-const settingsIcon = document.getElementById("settings-icon");
+const settingsIcons = [document.getElementById("settings-icon-gen"), document.getElementById("settings-icon-live"), document.getElementById("settings-icon-upload")];
 const logoutBtn = document.getElementById("logout-btn");
 const showAboutBtn = document.getElementById("show-about-btn");
 const showChangePasswordBtn = document.getElementById("show-change-password-btn");
@@ -365,15 +474,32 @@ const deleteConfirmPasswordInput = document.getElementById("delete-confirm-passw
 const deleteAccountError = document.getElementById("delete-account-error");
 
 
-// Switch Screens
-function showLoginUI(){loginContainer.style.display="block";registerContainer.style.display="none";scannerWrapper.style.display="none";}
-function showRegisterUI(){loginContainer.style.display="none";registerContainer.style.display="block";scannerWrapper.style.display="none";}
-function showScannerUI(){loginContainer.style.display="none";registerContainer.style.display="none";scannerWrapper.style.display="block";}
+// --- UI Screen Management ---
+function hideAllScreens() {
+    loginContainer.style.display="none";
+    registerContainer.style.display="none";
+    scannerWrapper.style.display="none";
+    generatorWrapper.style.display="none";
+    liveScannerWrapper.style.display="none";
+    stopLiveScanner();
+}
+
+function showLoginUI(){ hideAllScreens(); loginContainer.style.display="block"; }
+function showRegisterUI(){ hideAllScreens(); registerContainer.style.display="block"; }
+function showGeneratorUI(){ hideAllScreens(); generatorWrapper.style.display="block"; }
+function showLiveScannerUI() { hideAllScreens(); liveScannerWrapper.style.display="block"; startLiveScanner(); }
+function showScannerUI(){ hideAllScreens(); scannerWrapper.style.display="block"; }
+
+
 showLoginUI();
 showRegister.addEventListener("click",showRegisterUI);
 showLogin.addEventListener("click",showLoginUI);
+navShowGenerator.forEach(el => el.addEventListener("click", showGeneratorUI));
+navShowScanner.forEach(el => el.addEventListener("click", showScannerUI));
+navShowLiveScanner.forEach(el => el.addEventListener("click", showLiveScannerUI));
 
-// Modal Management
+
+// --- Modal Management ---
 function openModal(name) {
     if (modals[name]) {
         modals[name].overlay.style.display = "block";
@@ -393,20 +519,11 @@ document.querySelectorAll('.close-modal').forEach(btn => {
 });
 
 showForgot.addEventListener("click", () => openModal('forgot'));
-settingsIcon.addEventListener("click", () => openModal('settings'));
+settingsIcons.forEach(icon => icon.addEventListener("click", () => openModal('settings')));
 
-showAboutBtn.addEventListener("click", () => {
-    closeModal('settings');
-    openModal('about');
-});
-showChangePasswordBtn.addEventListener("click", () => {
-    closeModal('settings');
-    openModal('change-password');
-});
-showDeleteAccountBtn.addEventListener("click", () => {
-    closeModal('settings');
-    openModal('delete-account');
-});
+showAboutBtn.addEventListener("click", () => { closeModal('settings'); openModal('about'); });
+showChangePasswordBtn.addEventListener("click", () => { closeModal('settings'); openModal('change-password'); });
+showDeleteAccountBtn.addEventListener("click", () => { closeModal('settings'); openModal('delete-account'); });
 
 // Stepper animation
 function showSteps(id){
@@ -422,7 +539,7 @@ function showSteps(id){
 // --- Auth ---
 loginBtn.addEventListener("click",()=>{
   signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
-    .then(()=>{loginError.innerText="";showScannerUI();})
+    .then(()=>{loginError.innerText="";showGeneratorUI();}) // <<< Default to Generator
     .catch(err=>loginError.innerText=err.message);
 });
 
@@ -451,7 +568,6 @@ document.getElementById("reset-btn").addEventListener("click",()=>{
 
 logoutBtn.addEventListener("click", () => {
     signOut(auth).then(() => {
-        // Close all modals and show login screen
         Object.keys(modals).forEach(closeModal);
         showLoginUI();
     }).catch(err => alert(err.message));
@@ -460,9 +576,7 @@ logoutBtn.addEventListener("click", () => {
 // --- Account Management ---
 const getCredentials = (password) => {
     const user = auth.currentUser;
-    if (user) {
-        return EmailAuthProvider.credential(user.email, password);
-    }
+    if (user) { return EmailAuthProvider.credential(user.email, password); }
     return null;
 }
 
@@ -471,15 +585,9 @@ changePasswordBtn.addEventListener("click", () => {
     const newPassword = newPasswordInput.value;
     const user = auth.currentUser;
     changePasswordError.innerText = "";
-
-    if (!currentPassword || !newPassword) {
-        changePasswordError.innerText = "Please fill in all fields.";
-        return;
-    }
-
+    if (!currentPassword || !newPassword) { changePasswordError.innerText = "Please fill in all fields."; return; }
     const credential = getCredentials(currentPassword);
     if (!credential) return;
-
     reauthenticateWithCredential(user, credential).then(() => {
         updatePassword(user, newPassword).then(() => {
             alert("Password updated successfully. Please log in again.");
@@ -494,15 +602,9 @@ deleteAccountBtn.addEventListener("click", () => {
     const password = deleteConfirmPasswordInput.value;
     const user = auth.currentUser;
     deleteAccountError.innerText = "";
-
-    if (!password) {
-        deleteAccountError.innerText = "Password is required to delete your account.";
-        return;
-    }
-
+    if (!password) { deleteAccountError.innerText = "Password is required to delete your account."; return; }
     const credential = getCredentials(password);
     if (!credential) return;
-
     reauthenticateWithCredential(user, credential).then(() => {
         deleteUser(user).then(() => {
             alert("Account deleted successfully.");
@@ -512,36 +614,135 @@ deleteAccountBtn.addEventListener("click", () => {
     }).catch(err => deleteAccountError.innerText = "Incorrect password.");
 });
 
-// --- QR Scan ---
+// --- QR Generator ---
+generateQrBtn.addEventListener("click", () => {
+    const text = qrTextInput.value.trim();
+    if (!text) {
+        alert("Please enter some text or a URL to generate a QR code.");
+        return;
+    }
+    const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
+    generatedQrImage.src = apiUrl;
+    qrCodeBox.classList.add("show");
+    generatedQrImage.onload = () => { downloadQrBtn.disabled = false; };
+    generatedQrImage.onerror = () => {
+        alert("Failed to generate QR code. Please try again.");
+        qrCodeBox.classList.remove("show");
+    };
+    downloadQrBtn.disabled = true;
+});
+
+clearQrBtn.addEventListener("click", () => {
+    qrTextInput.value = "";
+    qrCodeBox.classList.remove("show");
+    generatedQrImage.src = "";
+});
+
+downloadQrBtn.addEventListener("click", async () => {
+    try {
+        const response = await fetch(generatedQrImage.src);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+a.href = url;
+        a.download = "qrcode.png";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (error) {
+        alert("Failed to download QR code.");
+    }
+});
+
+// --- Live QR Scanner ---
+function startLiveScanner() {
+    liveResults.style.display = 'none';
+    liveScanStatus.style.display = 'block';
+    liveScanStatus.innerText = "Starting camera...";
+    
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+        .then(function(s) {
+            stream = s;
+            video.srcObject = stream;
+            video.setAttribute("playsinline", true); 
+            video.play();
+            requestAnimationFrame(tick);
+        }).catch(function(err) {
+            liveScanStatus.innerText = "Error: Could not access camera.";
+            console.error(err);
+        });
+}
+
+function stopLiveScanner() {
+    if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+    }
+    cancelAnimationFrame(scanInterval);
+}
+
+function tick() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        liveScanStatus.innerText = "Searching for QR code...";
+        canvas.height = video.videoHeight;
+        canvas.width = video.videoWidth;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: "dontInvert",
+        });
+
+        if (code) {
+            liveScanStatus.style.display = 'none';
+            liveResults.style.display = 'block';
+            liveQrResult.value = code.data;
+            stopLiveScanner(); // Stop scanning once a code is found
+            return; 
+        }
+    }
+    scanInterval = requestAnimationFrame(tick);
+}
+
+newScanBtn.addEventListener("click", () => {
+    liveResults.style.display = 'none';
+    startLiveScanner();
+});
+
+copyLiveBtn.addEventListener("click", () => {
+    navigator.clipboard.writeText(liveQrResult.value);
+});
+
+// --- Upload QR Scanner ---
 function fetchRequest(file,formData){
   fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
     .then(res=>res.json())
     .then(result=>{
       const data=result[0]?.symbol[0]?.data;
-      if(!data){
-          alert("Could not decode QR Code from this image.");
-          return;
-      };
+      if(!data){ alert("Could not decode QR Code from this image."); return; };
       qrResult.value=data;
       form.classList.add("active");
       details.classList.add("active");
-    }).catch(()=>{
-        alert("An error occurred while scanning.");
-    });
+    }).catch(()=>{ alert("An error occurred while scanning."); });
 }
 
 form.addEventListener("click",()=>fileInput.click());
-
 fileInput.addEventListener("change",e=>{
-  const file=e.target.files[0];if(!file)return;
-  const formData=new FormData();formData.append('file',file);
+  const file=e.target.files[0]; if(!file)return;
+  const formData=new FormData(); formData.append('file',file);
   qrImage.src=URL.createObjectURL(file);
   fetchRequest(file,formData);
 });
+clearUploadBtn.addEventListener("click",()=>{
+    details.classList.remove("active");
+    form.classList.remove("active");
+    qrImage.src="#";
+    qrResult.value="";
+    fileInput.value = ''; // Reset file input
+});
+copyUploadBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
 
-closeBtn.addEventListener("click",()=>{details.classList.remove("active");form.classList.remove("active");qrImage.src="";qrResult.value="";});
-
-copyBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
 </script>
 </body>
 </html>
