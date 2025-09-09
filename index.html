@@ -63,13 +63,47 @@ button{
   border:1px solid rgba(255,255,255,0.3);
   backdrop-filter:blur(10px);
   transition:.3s;
+  position: relative;
 }
 button:hover{background:rgba(11,133,255,0.9);transform:scale(1.03);}
 p{margin-top:15px;font-size:14px;color:#fff;}
 a{color:#fff;cursor:pointer;text-decoration:none;font-weight:500;}
 a:hover{text-decoration:underline;}
 .error{margin-top:10px;font-size:13px;color:#ffbaba;}
-.success{margin-top:10px;font-size:13px;color:#b2ffb2;}
+
+/* Loading Spinner Animation */
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    display: none;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: -10px;
+    margin-left: -10px;
+}
+button.loading .spinner { display: block; }
+button.loading span { visibility: hidden; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* App Loader (Logout) */
+#app-loader {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 200;
+}
+#app-loader .spinner { display: block; position: static; margin: 0 0 15px 0; width: 40px; height: 40px; }
+
 
 /* Generator */
 .generator-wrapper textarea { height: 120px; }
@@ -81,16 +115,8 @@ a:hover{text-decoration:underline;}
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
-.qr-code-box.show {
-    display: block;
-    animation: fadeIn 0.5s ease;
-}
-.qr-code-box img {
-    max-width: 100%;
-    border-radius: 10px;
-    background: white;
-    padding: 8px;
-}
+.qr-code-box.show { display: block; animation: fadeIn 0.5s ease; }
+.qr-code-box img { max-width: 100%; border-radius: 10px; background: white; padding: 8px; }
 .buttons{display:flex;justify-content:space-between;width:100%;margin-top:15px;}
 .buttons button{width:48%;height:45px;border-radius:8px;font-size:14px;font-weight:600;}
 
@@ -104,13 +130,41 @@ a:hover{text-decoration:underline;}
     background: #000;
 }
 #video { width: 100%; height: auto; display: block; }
-#scan-overlay {
+.live-results { margin-top: 15px; }
+.live-results textarea { height: 100px; }
+#scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, rgba(11, 133, 255, 0.8), transparent);
+    animation: scan-anim 2.5s infinite linear;
+    box-shadow: 0 0 10px rgba(11, 133, 255, 0.7);
+}
+@keyframes scan-anim { 0% { top: 0; } 50% { top: calc(100% - 3px); } 100% { top: 0; } }
+
+#scan-success-overlay {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    z-index: 5;
+    display: none;
 }
-.live-results { margin-top: 15px; }
-.live-results textarea { height: 100px; }
+.tick-container {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px; height: 100px;
+    z-index: 10;
+}
+.tick-svg { width: 100px; display: block; margin: 0 auto; }
+.path { stroke-dasharray: 1000; stroke-dashoffset: 0; }
+.path.circle { animation: dash .9s ease-in-out; }
+.path.check { stroke-dashoffset: -100; animation: dash-check .9s .35s ease-in-out forwards; }
+@keyframes dash { 0% { stroke-dashoffset: 1000; } 100% { stroke-dashoffset: 0; } }
+@keyframes dash-check { 0% { stroke-dashoffset: -100; } 100% { stroke-dashoffset: 900; } }
 
 
 /* Upload Scanner */
@@ -124,19 +178,29 @@ a:hover{text-decoration:underline;}
   background:rgba(255,255,255,0.1);
   cursor:pointer;
   backdrop-filter:blur(8px);
+  position: relative;
 }
 .upload-box:hover{background:rgba(255,255,255,0.15);transform:scale(1.02);}
 .upload-area i{font-size:60px;color:#fff;margin-bottom:10px;}
 .upload-area p{font-size:14px;color:#fff;margin-bottom:10px;}
 .upload-area img{
-  display:none;
-  max-width:200px;
-  border-radius:10px;
-  margin-top:15px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
-  animation:fadeIn .5s ease forwards;
+  display:none; max-width:200px; border-radius:10px; margin-top:15px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1); animation:fadeIn .5s ease forwards;
 }
 .upload-box.active img{display:block;}
+.upload-box .upload-loader {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    border-radius: 14px;
+}
+.upload-box.loading .upload-loader { display: flex; }
+.upload-box.loading .upload-loader .spinner { display: block; position: static; margin: 0; width: 40px; height: 40px; }
+
 .details{margin-top:20px;display:flex;flex-direction:column;align-items:center;opacity:0;transition:.4s;width:100%;}
 .details.active{opacity:1;}
 .details textarea{height:150px;}
@@ -144,19 +208,12 @@ a:hover{text-decoration:underline;}
 
 /* Overlay + Modal */
 .overlay{
-  display:none;
-  position:fixed;
-  top:0;left:0;width:100%;height:100%;
-  background:rgba(0,0,0,0.5);
-  z-index:90;
+  display:none; position:fixed; top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.5); z-index:90;
 }
 .modal{
-  position:fixed;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%) scale(.9);
-  width:380px;max-width:95%;
-  z-index:100;
-  animation:popup .3s ease forwards;
+  position:fixed; top:50%;left:50%; transform:translate(-50%,-50%) scale(.9);
+  width:380px;max-width:95%; z-index:100; animation:popup .3s ease forwards;
 }
 .modal h2{color:#fff;font-size:20px;margin-bottom:10px;}
 .close-modal{position:absolute;top:10px;right:15px;font-size:20px;color:#fff;cursor:pointer;}
@@ -165,10 +222,8 @@ a:hover{text-decoration:underline;}
 .steps{margin-top:20px;text-align:left;}
 .step{display:flex;align-items:center;margin-bottom:12px;opacity:.3;transition:.4s;}
 .step span{
-  width:28px;height:28px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,0.2);color:#fff;
-  font-weight:600;margin-right:10px;
+  width:28px;height:28px;border-radius:50%; display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.2);color:#fff; font-weight:600;margin-right:10px;
 }
 .step.active{opacity:1;transform:translateX(5px);}
 .step.active span{background:#0B85FF;color:#fff;}
@@ -176,12 +231,8 @@ a:hover{text-decoration:underline;}
 
 /* Settings Icon */
 .settings-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 22px;
-    cursor: pointer;
-    transition: transform 0.3s;
+    position: absolute; top: 20px; right: 20px;
+    font-size: 22px; cursor: pointer; transition: transform 0.3s;
 }
 .settings-icon:hover { transform: rotate(45deg); }
 .delete-btn { background: rgba(255, 59, 48, 0.7); }
@@ -199,12 +250,18 @@ a:hover{text-decoration:underline;}
 </head>
 <body>
 
+<!-- Full App Loader -->
+<div id="app-loader">
+    <div class="spinner"></div>
+    <p>Logging out...</p>
+</div>
+
 <!-- Login -->
 <div class="container" id="login-container">
   <h2>Login</h2>
   <input type="email" id="login-email" placeholder="Email">
   <input type="password" id="login-password" placeholder="Password">
-  <button id="login-btn">Login</button>
+  <button id="login-btn"><span>Login</span><div class="spinner"></div></button>
   <div class="error" id="login-error"></div>
   <p><a id="show-forgot">Forgot Password?</a></p>
   <p>Don't have an account? <a id="show-register">Register</a></p>
@@ -215,7 +272,7 @@ a:hover{text-decoration:underline;}
   <h2>Register</h2>
   <input type="email" id="register-email" placeholder="Email">
   <input type="password" id="register-password" placeholder="Password">
-  <button id="register-btn">Register</button>
+  <button id="register-btn"><span>Register</span><div class="spinner"></div></button>
   <div class="error" id="register-error"></div>
   <p>Already have an account? <a id="show-login">Login</a></p>
 </div>
@@ -226,12 +283,12 @@ a:hover{text-decoration:underline;}
     <i class="fas fa-cog settings-icon" id="settings-icon-gen"></i>
     <h2>QR Code Generator</h2>
     <textarea id="qr-text-input" placeholder="Enter text or URL to encode..."></textarea>
-    <button id="generate-qr-btn">Generate QR Code</button>
+    <button id="generate-qr-btn"><span>Generate QR Code</span><div class="spinner"></div></button>
     <div class="qr-code-box" id="qr-code-box">
         <img id="generated-qr-image" src="" alt="Generated QR Code">
         <div class="buttons">
-            <button id="clear-qr-btn">Clear</button>
-            <button id="download-qr-btn">Download</button>
+            <button id="clear-qr-btn"><span>Clear</span></button>
+            <button id="download-qr-btn"><span>Download</span></button>
         </div>
     </div>
     <p>Switch to: <a id="show-live-scanner">Live Scan</a> | <a id="show-scanner">Upload Scan</a></p>
@@ -243,14 +300,22 @@ a:hover{text-decoration:underline;}
     <h2>Live Scanner</h2>
     <div id="video-container">
         <video id="video" playsinline></video>
+        <div id="scan-line"></div>
         <canvas id="canvas" style="display: none;"></canvas>
+        <div id="scan-success-overlay"></div>
+        <div id="tick-animation" class="tick-container" style="display: none;">
+            <svg class="tick-svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 130.2 130.2">
+                <circle class="path circle" fill="none" stroke="#73AF55" stroke-width="6" stroke-miterlimit="10" cx="65.1" cy="65.1" r="62.1"/>
+                <polyline class="path check" fill="none" stroke="#73AF55" stroke-width="6" stroke-linecap="round" stroke-miterlimit="10" points="100.2,40.2 51.5,88.8 29.8,67.5 "/>
+            </svg>
+        </div>
     </div>
     <div id="live-scan-status">Searching for QR code...</div>
     <div class="live-results" id="live-results" style="display:none;">
         <textarea id="live-qr-result" readonly></textarea>
         <div class="buttons">
-            <button id="new-scan-btn">New Scan</button>
-            <button id="copy-live-btn">Copy</button>
+            <button id="new-scan-btn"><span>New Scan</span></button>
+            <button id="copy-live-btn"><span>Copy</span></button>
         </div>
     </div>
      <p>Switch to: <a id="show-generator">Generate</a> | <a id="show-scanner-2">Upload Scan</a></p>
@@ -268,12 +333,13 @@ a:hover{text-decoration:underline;}
       <img id="qr-image" src="#" alt="QR Preview">
     </div>
     <input type="file" id="file-input" hidden>
+    <div class="upload-loader"><div class="spinner"></div></div>
   </form>
   <div class="details" id="details">
     <textarea id="qr-result" readonly></textarea>
     <div class="buttons">
-      <button id="clear-upload-btn">Clear</button>
-      <button id="copy-upload-btn">Copy</button>
+      <button id="clear-upload-btn"><span>Clear</span></button>
+      <button id="copy-upload-btn"><span>Copy</span></button>
     </div>
   </div>
   <p>Switch to: <a id="show-generator-2">Generate</a> | <a id="show-live-scanner-2">Live Scan</a></p>
@@ -287,88 +353,16 @@ a:hover{text-decoration:underline;}
   <h2>Reset Password</h2>
   <p style="font-size:13px;color:#fff;">Enter your email and we’ll send you a reset link.</p>
   <input type="email" id="reset-email" placeholder="Your email">
-  <button id="reset-btn">Send Reset Link</button>
+  <button id="reset-btn"><span>Send Reset Link</span><div class="spinner"></div></button>
 </div>
 
-<!-- Register Verification Modal -->
-<div class="overlay" id="verify-overlay"></div>
-<div class="modal" id="verify-modal">
-  <span class="close-modal" data-target="verify">&times;</span>
-  <h2>Email Verification</h2>
-  <div class="steps" id="verify-steps">
-    <div class="step"><span>1</span><p>Verification email sent</p></div>
-    <div class="step"><span>2</span><p>Open your inbox (check spam)</p></div>
-    <div class="step"><span>3</span><p>Click the link to verify</p></div>
-    <div class="step"><span>4</span><p>Return here & login</p></div>
-  </div>
-</div>
-
-<!-- Reset Instructions Modal -->
-<div class="overlay" id="reset-overlay"></div>
-<div class="modal" id="reset-modal">
-  <span class="close-modal" data-target="reset">&times;</span>
-  <h2>Password Reset</h2>
-  <div class="steps" id="reset-steps">
-    <div class="step"><span>1</span><p>Reset email sent</p></div>
-    <div class="step"><span>2</span><p>Check your inbox (and spam)</p></div>
-    <div class="step"><span>3</span><p>Click the reset link</p></div>
-    <div class="step"><span>4</span><p>Set new password & login</p></div>
-  </div>
-</div>
-
-<!-- Settings Modal -->
-<div class="overlay" id="settings-overlay"></div>
-<div class="modal" id="settings-modal">
-    <span class="close-modal" data-target="settings">&times;</span>
-    <h2>Settings</h2>
-    <button id="show-about-btn">About</button>
-    <button id="show-change-password-btn">Change Password</button>
-    <button id="show-delete-account-btn" class="delete-btn">Delete Account</button>
-    <button id="logout-btn" style="margin-top: 25px;">Logout</button>
-</div>
-
-<!-- Change Password Modal -->
-<div class="overlay" id="change-password-overlay"></div>
-<div class="modal" id="change-password-modal">
-    <span class="close-modal" data-target="change-password">&times;</span>
-    <h2>Change Password</h2>
-    <input type="password" id="current-password" placeholder="Current Password">
-    <input type="password" id="new-password" placeholder="New Password">
-    <button id="change-password-btn">Update Password</button>
-    <div class="error" id="change-password-error"></div>
-</div>
-
-<!-- Delete Account Modal -->
-<div class="overlay" id="delete-account-overlay"></div>
-<div class="modal" id="delete-account-modal">
-    <span class="close-modal" data-target="delete-account">&times;</span>
-    <h2>Delete Account</h2>
-    <p style="font-size: 13px;">This action is irreversible. Please enter your password to confirm.</p>
-    <input type="password" id="delete-confirm-password" placeholder="Enter your password">
-    <button id="delete-account-btn" class="delete-btn">Confirm Deletion</button>
-    <div class="error" id="delete-account-error"></div>
-</div>
-
-<!-- About Modal -->
-<div class="overlay" id="about-overlay"></div>
-<div class="modal" id="about-modal">
-    <span class="close-modal" data-target="about">&times;</span>
-    <h2>About This App</h2>
-    <p style="font-size: 14px; text-align: left; line-height: 1.6;">
-        <strong>QR Code Suite</strong><br>
-        Version: 1.5.0<br><br>
-        This application allows you to easily generate, live scan, and decode QR codes from images. It is a single-page application built with modern web technologies.<br><br>
-        <strong>Features:</strong>
-        <ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;">
-            <li>Secure User Authentication via Firebase.</li>
-            <li>QR Code generation.</li>
-            <li>Live camera QR code scanning.</li>
-            <li>QR Code decoding from image upload.</li>
-            <li>Modern "Glassmorphism" UI.</li>
-            <li>Account management features.</li>
-        </ul>
-    </p>
-</div>
+<!-- Other Modals... -->
+<div class="overlay" id="verify-overlay"></div><div class="modal" id="verify-modal"><span class="close-modal" data-target="verify">&times;</span><h2>Email Verification</h2><div class="steps" id="verify-steps"><div class="step"><span>1</span><p>Verification email sent</p></div><div class="step"><span>2</span><p>Open your inbox (check spam)</p></div><div class="step"><span>3</span><p>Click the link to verify</p></div><div class="step"><span>4</span><p>Return here & login</p></div></div></div>
+<div class="overlay" id="reset-overlay"></div><div class="modal" id="reset-modal"><span class="close-modal" data-target="reset">&times;</span><h2>Password Reset</h2><div class="steps" id="reset-steps"><div class="step"><span>1</span><p>Reset email sent</p></div><div class="step"><span>2</span><p>Check your inbox (and spam)</p></div><div class="step"><span>3</span><p>Click the reset link</p></div><div class="step"><span>4</span><p>Set new password & login</p></div></div></div>
+<div class="overlay" id="settings-overlay"></div><div class="modal" id="settings-modal"><span class="close-modal" data-target="settings">&times;</span><h2>Settings</h2><button id="show-about-btn"><span>About</span></button><button id="show-change-password-btn"><span>Change Password</span></button><button id="show-delete-account-btn" class="delete-btn"><span>Delete Account</span></button><button id="logout-btn" style="margin-top: 25px;"><span>Logout</span></button></div>
+<div class="overlay" id="change-password-overlay"></div><div class="modal" id="change-password-modal"><span class="close-modal" data-target="change-password">&times;</span><h2>Change Password</h2><input type="password" id="current-password" placeholder="Current Password"><input type="password" id="new-password" placeholder="New Password"><button id="change-password-btn"><span>Update Password</span><div class="spinner"></div></button><div class="error" id="change-password-error"></div></div>
+<div class="overlay" id="delete-account-overlay"></div><div class="modal" id="delete-account-modal"><span class="close-modal" data-target="delete-account">&times;</span><h2>Delete Account</h2><p style="font-size: 13px;">This action is irreversible. Please enter your password to confirm.</p><input type="password" id="delete-confirm-password" placeholder="Enter your password"><button id="delete-account-btn" class="delete-btn"><span>Confirm Deletion</span><div class="spinner"></div></button><div class="error" id="delete-account-error"></div></div>
+<div class="overlay" id="about-overlay"></div><div class="modal" id="about-modal"><span class="close-modal" data-target="about">&times;</span><h2>About This App</h2><p style="font-size: 14px; text-align: left; line-height: 1.6;"><strong>QR Code Suite</strong><br>Version: 1.8.0<br><br>This application allows you to easily generate, live scan, and decode QR codes from images. It is a single-page application built with modern web technologies.<br><br><strong>Features:</strong><ul style="text-align: left; margin-left: 20px; font-size: 14px; list-style-position: inside;"><li>Secure User Authentication via Firebase.</li><li>Animated actions for login, generation, and scanning.</li><li>Live camera QR code scanning with success animation.</li><li>QR Code decoding from image upload.</li><li>Modern "Glassmorphism" UI.</li><li>Account management features.</li></ul></p></div>
 
 
 <script type="module">
@@ -391,6 +385,7 @@ const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
 
 // --- Elements ---
+const appLoader = document.getElementById("app-loader");
 const loginContainer=document.getElementById("login-container");
 const registerContainer=document.getElementById("register-container");
 const scannerWrapper=document.getElementById("scanner-wrapper");
@@ -410,7 +405,6 @@ const registerError=document.getElementById("register-error");
 const showRegister=document.getElementById("show-register");
 const showLogin=document.getElementById("show-login");
 const showForgot=document.getElementById("show-forgot");
-
 const navShowGenerator = [document.getElementById("show-generator"), document.getElementById("show-generator-2")];
 const navShowScanner = [document.getElementById("show-scanner"), document.getElementById("show-scanner-2")];
 const navShowLiveScanner = [document.getElementById("show-live-scanner"), document.getElementById("show-live-scanner-2")];
@@ -431,6 +425,8 @@ const liveResults = document.getElementById("live-results");
 const liveQrResult = document.getElementById("live-qr-result");
 const newScanBtn = document.getElementById("new-scan-btn");
 const copyLiveBtn = document.getElementById("copy-live-btn");
+const tickAnimation = document.getElementById("tick-animation");
+const scanSuccessOverlay = document.getElementById("scan-success-overlay");
 let stream;
 let scanInterval;
 
@@ -443,7 +439,7 @@ const details=document.getElementById("details");
 const clearUploadBtn = document.getElementById("clear-upload-btn");
 const copyUploadBtn = document.getElementById("copy-upload-btn");
 
-// Modals & Overlays
+// Modals
 const modals = {
     forgot: { overlay: document.getElementById("forgot-overlay"), modal: document.getElementById("forgot-modal") },
     verify: { overlay: document.getElementById("verify-overlay"), modal: document.getElementById("verify-modal") },
@@ -453,24 +449,26 @@ const modals = {
     "delete-account": { overlay: document.getElementById("delete-account-overlay"), modal: document.getElementById("delete-account-modal") },
     about: { overlay: document.getElementById("about-overlay"), modal: document.getElementById("about-modal") }
 };
-
-// Settings
 const settingsIcons = [document.getElementById("settings-icon-gen"), document.getElementById("settings-icon-live"), document.getElementById("settings-icon-upload")];
 const logoutBtn = document.getElementById("logout-btn");
 const showAboutBtn = document.getElementById("show-about-btn");
 const showChangePasswordBtn = document.getElementById("show-change-password-btn");
 const showDeleteAccountBtn = document.getElementById("show-delete-account-btn");
-
-// Change Password
+const resetBtn = document.getElementById("reset-btn");
 const changePasswordBtn = document.getElementById("change-password-btn");
 const currentPasswordInput = document.getElementById("current-password");
 const newPasswordInput = document.getElementById("new-password");
 const changePasswordError = document.getElementById("change-password-error");
-
-// Delete Account
 const deleteAccountBtn = document.getElementById("delete-account-btn");
 const deleteConfirmPasswordInput = document.getElementById("delete-confirm-password");
 const deleteAccountError = document.getElementById("delete-account-error");
+
+
+// --- Helper Functions ---
+function setButtonLoading(button, isLoading) {
+    button.classList.toggle('loading', isLoading);
+    button.disabled = isLoading;
+}
 
 
 // --- UI Screen Management ---
@@ -480,6 +478,7 @@ function hideAllScreens() {
     scannerWrapper.style.display="none";
     generatorWrapper.style.display="none";
     liveScannerWrapper.style.display="none";
+    appLoader.style.display = "none";
     stopLiveScanner();
 }
 
@@ -489,98 +488,75 @@ function showGeneratorUI(){ hideAllScreens(); generatorWrapper.style.display="bl
 function showLiveScannerUI() { hideAllScreens(); liveScannerWrapper.style.display="block"; startLiveScanner(); }
 function showScannerUI(){ hideAllScreens(); scannerWrapper.style.display="block"; }
 
-
 showRegister.addEventListener("click",showRegisterUI);
 showLogin.addEventListener("click",showLoginUI);
 navShowGenerator.forEach(el => el.addEventListener("click", showGeneratorUI));
 navShowScanner.forEach(el => el.addEventListener("click", showScannerUI));
 navShowLiveScanner.forEach(el => el.addEventListener("click", showLiveScannerUI));
 
-
 // --- Modal Management ---
-function openModal(name) {
-    if (modals[name]) {
-        modals[name].overlay.style.display = "block";
-        modals[name].modal.style.display = "block";
-    }
-}
-
-function closeModal(name) {
-    if (modals[name]) {
-        modals[name].overlay.style.display = "none";
-        modals[name].modal.style.display = "none";
-    }
-}
-
-document.querySelectorAll('.close-modal').forEach(btn => {
-    btn.addEventListener('click', () => closeModal(btn.dataset.target));
-});
-
+function openModal(name) { if (modals[name]) { modals[name].overlay.style.display = "block"; modals[name].modal.style.display = "block"; }}
+function closeModal(name) { if (modals[name]) { modals[name].overlay.style.display = "none"; modals[name].modal.style.display = "none"; }}
+document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', () => closeModal(btn.dataset.target)));
 showForgot.addEventListener("click", () => openModal('forgot'));
 settingsIcons.forEach(icon => icon.addEventListener("click", () => openModal('settings')));
-
 showAboutBtn.addEventListener("click", () => { closeModal('settings'); openModal('about'); });
 showChangePasswordBtn.addEventListener("click", () => { closeModal('settings'); openModal('change-password'); });
 showDeleteAccountBtn.addEventListener("click", () => { closeModal('settings'); openModal('delete-account'); });
 
-// Stepper animation
+// --- Stepper Animation ---
 function showSteps(id){
   const steps=document.querySelectorAll("#"+id+" .step");
   let i=0;
   steps.forEach(s=>s.classList.remove("active"));
-  let interval=setInterval(()=>{
-    if(i<steps.length){steps[i].classList.add("active");i++;}
-    else clearInterval(interval);
-  },1100);
+  let interval=setInterval(()=>{ if(i<steps.length){steps[i].classList.add("active");i++;} else clearInterval(interval); }, 1100);
 }
 
 // --- Auth ---
 onAuthStateChanged(auth, user => {
-    if (user) {
-        // User is signed in, show the main app.
-        showGeneratorUI();
-    } else {
-        // User is signed out, show the login UI.
-        showLoginUI();
-    }
+    if (user) { showGeneratorUI(); } else { showLoginUI(); }
 });
 
-
 loginBtn.addEventListener("click",()=>{
-  signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
-    .then((userCredential) => {
-        // This will be handled by onAuthStateChanged
-    })
-    .catch(err => {
-        loginError.innerText = err.message;
-    });
+    setButtonLoading(loginBtn, true);
+    signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value)
+        .catch(err => { loginError.innerText = err.message; })
+        .finally(() => setButtonLoading(loginBtn, false));
 });
 
 registerBtn.addEventListener("click",()=>{
-  createUserWithEmailAndPassword(auth,registerEmail.value,registerPassword.value)
-    .then(userCred=>{
-      sendEmailVerification(userCred.user);
-      openModal('verify');
-      showSteps("verify-steps");
-    })
-    .catch(err=>registerError.innerText=err.message);
+    setButtonLoading(registerBtn, true);
+    createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value)
+        .then(userCred=>{
+            sendEmailVerification(userCred.user);
+            openModal('verify');
+            showSteps("verify-steps");
+        })
+        .catch(err=>registerError.innerText=err.message)
+        .finally(() => setButtonLoading(registerBtn, false));
 });
 
-document.getElementById("reset-btn").addEventListener("click",()=>{
-  const resetEmail = document.getElementById("reset-email").value;
-  if(!resetEmail){alert("Enter your email.");return;}
-  sendPasswordResetEmail(auth,resetEmail)
-    .then(()=>{
-      closeModal('forgot');
-      openModal('reset');
-      showSteps("reset-steps");
-      setTimeout(()=>closeModal('reset'), 6000);
-    })
-    .catch(err=>alert(err.message));
+resetBtn.addEventListener("click",()=>{
+    const resetEmail = document.getElementById("reset-email").value;
+    if(!resetEmail){alert("Enter your email.");return;}
+    setButtonLoading(resetBtn, true);
+    sendPasswordResetEmail(auth,resetEmail)
+        .then(()=>{
+            closeModal('forgot');
+            openModal('reset');
+            showSteps("reset-steps");
+            setTimeout(()=>closeModal('reset'), 6000);
+        })
+        .catch(err=>alert(err.message))
+        .finally(() => setButtonLoading(resetBtn, false));
 });
 
 logoutBtn.addEventListener("click", () => {
-    signOut(auth).catch(err => alert(err.message));
+    appLoader.style.display = "flex";
+    signOut(auth).catch(err => {
+        alert(err.message);
+        appLoader.style.display = "none";
+    });
 });
 
 // --- Account Management ---
@@ -598,13 +574,15 @@ changePasswordBtn.addEventListener("click", () => {
     if (!currentPassword || !newPassword) { changePasswordError.innerText = "Please fill in all fields."; return; }
     const credential = getCredentials(currentPassword);
     if (!credential) return;
+    setButtonLoading(changePasswordBtn, true);
     reauthenticateWithCredential(user, credential).then(() => {
         updatePassword(user, newPassword).then(() => {
             alert("Password updated successfully. Please log in again.");
             signOut(auth);
             Object.keys(modals).forEach(closeModal);
         }).catch(err => changePasswordError.innerText = err.message);
-    }).catch(err => changePasswordError.innerText = "Incorrect current password.");
+    }).catch(err => changePasswordError.innerText = "Incorrect current password.")
+    .finally(() => setButtonLoading(changePasswordBtn, false));
 });
 
 deleteAccountBtn.addEventListener("click", () => {
@@ -614,36 +592,38 @@ deleteAccountBtn.addEventListener("click", () => {
     if (!password) { deleteAccountError.innerText = "Password is required to delete your account."; return; }
     const credential = getCredentials(password);
     if (!credential) return;
+    setButtonLoading(deleteAccountBtn, true);
     reauthenticateWithCredential(user, credential).then(() => {
         deleteUser(user).then(() => {
             alert("Account deleted successfully.");
             Object.keys(modals).forEach(closeModal);
         }).catch(err => deleteAccountError.innerText = err.message);
-    }).catch(err => deleteAccountError.innerText = "Incorrect password.");
+    }).catch(err => deleteAccountError.innerText = "Incorrect password.")
+    .finally(() => setButtonLoading(deleteAccountBtn, false));
 });
 
 // --- QR Generator ---
 generateQrBtn.addEventListener("click", () => {
     const text = qrTextInput.value.trim();
-    if (!text) {
-        alert("Please enter some text or a URL to generate a QR code.");
-        return;
-    }
+    if (!text) { alert("Please enter some text or a URL."); return; }
+    setButtonLoading(generateQrBtn, true);
     const apiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(text)}`;
     generatedQrImage.src = apiUrl;
     qrCodeBox.classList.add("show");
-    generatedQrImage.onload = () => { downloadQrBtn.disabled = false; };
+    generatedQrImage.onload = () => {
+        downloadQrBtn.disabled = false;
+        setButtonLoading(generateQrBtn, false);
+    };
     generatedQrImage.onerror = () => {
-        alert("Failed to generate QR code. Please try again.");
+        alert("Failed to generate QR code.");
         qrCodeBox.classList.remove("show");
+        setButtonLoading(generateQrBtn, false);
     };
     downloadQrBtn.disabled = true;
 });
 
 clearQrBtn.addEventListener("click", () => {
-    qrTextInput.value = "";
-    qrCodeBox.classList.remove("show");
-    generatedQrImage.src = "";
+    qrTextInput.value = ""; qrCodeBox.classList.remove("show"); generatedQrImage.src = "";
 });
 
 downloadQrBtn.addEventListener("click", async () => {
@@ -652,21 +632,19 @@ downloadQrBtn.addEventListener("click", async () => {
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
-a.href = url;
-        a.download = "qrcode.png";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        a.href = url; a.download = "qrcode.png";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    } catch (error) {
-        alert("Failed to download QR code.");
-    }
+    } catch (error) { alert("Failed to download QR code."); }
 });
 
 // --- Live QR Scanner ---
 function startLiveScanner() {
     liveResults.style.display = 'none';
     liveScanStatus.style.display = 'block';
+    tickAnimation.style.display = 'none';
+    scanSuccessOverlay.style.display = 'none';
+    video.style.display = 'block';
     liveScanStatus.innerText = "Starting camera...";
     
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
@@ -683,10 +661,7 @@ function startLiveScanner() {
 }
 
 function stopLiveScanner() {
-    if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-        stream = null;
-    }
+    if (stream) { stream.getTracks().forEach(track => track.stop()); stream = null; }
     cancelAnimationFrame(scanInterval);
 }
 
@@ -698,32 +673,31 @@ function tick() {
         const ctx = canvas.getContext("2d");
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: "dontInvert",
-        });
-
-        if (code) {
-            liveScanStatus.style.display = 'none';
-            liveResults.style.display = 'block';
-            liveQrResult.value = code.data;
-            stopLiveScanner(); // Stop scanning once a code is found
-            return; 
-        }
+        const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+        if (code) { stopLiveScanner(); showScanSuccess(code.data); return; }
     }
     scanInterval = requestAnimationFrame(tick);
 }
 
-newScanBtn.addEventListener("click", () => {
-    liveResults.style.display = 'none';
-    startLiveScanner();
-});
+function showScanSuccess(data) {
+    video.style.display = 'none';
+    scanSuccessOverlay.style.display = 'block';
+    tickAnimation.style.display = 'block';
+    setTimeout(() => {
+        tickAnimation.style.display = 'none';
+        scanSuccessOverlay.style.display = 'none';
+        liveScanStatus.style.display = 'none';
+        liveResults.style.display = 'block';
+        liveQrResult.value = data;
+    }, 1500);
+}
 
-copyLiveBtn.addEventListener("click", () => {
-    navigator.clipboard.writeText(liveQrResult.value);
-});
+newScanBtn.addEventListener("click", startLiveScanner);
+copyLiveBtn.addEventListener("click", () => navigator.clipboard.writeText(liveQrResult.value));
 
 // --- Upload QR Scanner ---
 function fetchRequest(file,formData){
+  form.classList.add('loading');
   fetch("https://api.qrserver.com/v1/read-qr-code/",{method:'POST',body:formData})
     .then(res=>res.json())
     .then(result=>{
@@ -732,7 +706,9 @@ function fetchRequest(file,formData){
       qrResult.value=data;
       form.classList.add("active");
       details.classList.add("active");
-    }).catch(()=>{ alert("An error occurred while scanning."); });
+    })
+    .catch(()=>{ alert("An error occurred while scanning."); })
+    .finally(() => form.classList.remove('loading'));
 }
 
 form.addEventListener("click",()=>fileInput.click());
@@ -747,7 +723,7 @@ clearUploadBtn.addEventListener("click",()=>{
     form.classList.remove("active");
     qrImage.src="#";
     qrResult.value="";
-    fileInput.value = ''; // Reset file input
+    fileInput.value = ''; 
 });
 copyUploadBtn.addEventListener("click",()=>navigator.clipboard.writeText(qrResult.value));
 
