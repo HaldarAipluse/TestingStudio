@@ -373,7 +373,7 @@ a:hover{text-decoration:underline;}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, setPersistence, browserSessionPersistence, EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, sendEmailVerification, onAuthStateChanged, EmailAuthProvider, reauthenticateWithCredential, updatePassword, deleteUser } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
 // Firebase Config
 const firebaseConfig = {
@@ -389,7 +389,6 @@ const firebaseConfig = {
 
 const app=initializeApp(firebaseConfig);
 const auth=getAuth(app);
-setPersistence(auth,browserSessionPersistence);
 
 // --- Elements ---
 const loginContainer=document.getElementById("login-container");
@@ -491,7 +490,6 @@ function showLiveScannerUI() { hideAllScreens(); liveScannerWrapper.style.displa
 function showScannerUI(){ hideAllScreens(); scannerWrapper.style.display="block"; }
 
 
-showLoginUI();
 showRegister.addEventListener("click",showRegisterUI);
 showLogin.addEventListener("click",showLoginUI);
 navShowGenerator.forEach(el => el.addEventListener("click", showGeneratorUI));
@@ -537,10 +535,25 @@ function showSteps(id){
 }
 
 // --- Auth ---
+onAuthStateChanged(auth, user => {
+    if (user) {
+        // User is signed in, show the main app.
+        showGeneratorUI();
+    } else {
+        // User is signed out, show the login UI.
+        showLoginUI();
+    }
+});
+
+
 loginBtn.addEventListener("click",()=>{
   signInWithEmailAndPassword(auth,loginEmail.value,loginPassword.value)
-    .then(()=>{loginError.innerText="";showGeneratorUI();}) // <<< Default to Generator
-    .catch(err=>loginError.innerText=err.message);
+    .then((userCredential) => {
+        // This will be handled by onAuthStateChanged
+    })
+    .catch(err => {
+        loginError.innerText = err.message;
+    });
 });
 
 registerBtn.addEventListener("click",()=>{
@@ -567,10 +580,7 @@ document.getElementById("reset-btn").addEventListener("click",()=>{
 });
 
 logoutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-        Object.keys(modals).forEach(closeModal);
-        showLoginUI();
-    }).catch(err => alert(err.message));
+    signOut(auth).catch(err => alert(err.message));
 });
 
 // --- Account Management ---
@@ -593,7 +603,6 @@ changePasswordBtn.addEventListener("click", () => {
             alert("Password updated successfully. Please log in again.");
             signOut(auth);
             Object.keys(modals).forEach(closeModal);
-            showLoginUI();
         }).catch(err => changePasswordError.innerText = err.message);
     }).catch(err => changePasswordError.innerText = "Incorrect current password.");
 });
@@ -609,7 +618,6 @@ deleteAccountBtn.addEventListener("click", () => {
         deleteUser(user).then(() => {
             alert("Account deleted successfully.");
             Object.keys(modals).forEach(closeModal);
-            showLoginUI();
         }).catch(err => deleteAccountError.innerText = err.message);
     }).catch(err => deleteAccountError.innerText = "Incorrect password.");
 });
